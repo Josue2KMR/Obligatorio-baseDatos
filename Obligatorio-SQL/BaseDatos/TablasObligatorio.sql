@@ -1,3 +1,4 @@
+-- Active: 1761227050923@@127.0.0.1@3306@obligatorio
 DROP DATABASE IF EXISTS obligatorio;
 CREATE DATABASE obligatorio;
 USE obligatorio;
