@@ -10,7 +10,7 @@ CREATE TABLE participante (
 );
 
 CREATE TABLE facultad(
-    id_facultad INT NOT NULL PRIMARY KEY,
+    id_facultad INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     nombre VARCHAR(100) NOT NULL
 );
 
@@ -27,9 +27,9 @@ CREATE TABLE edificio(
 );
 
 CREATE TABLE turno(
-    id_turno INT NOT NULL PRIMARY KEY,
-    hora_inicio DATETIME NOT NULL,
-    hora_fin DATETIME NOT NULL
+    id_turno INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
+    hora_inicio TIME NOT NULL,
+    hora_fin TIME NOT NULL
 );
 
 CREATE TABLE login (
@@ -40,7 +40,7 @@ CREATE TABLE login (
 
 
 CREATE TABLE participante_programa_academico(
-    id_alumno_programa INT NOT NULL PRIMARY KEY,
+    id_alumno_programa INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     ci_participante INT NOT NULL,
     nombre_programa VARCHAR(100) NOT NULL,
     rol VARCHAR(100) NOT NULL,
@@ -60,7 +60,7 @@ CREATE TABLE sala(
 
 
 CREATE TABLE reserva(
-    id_reserva INT NOT NULL PRIMARY KEY,
+    id_reserva INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     nombre_sala VARCHAR(100) NOT NULL,
     edificio VARCHAR(100) NOT NULL,
     fecha DATE NOT NULL,
