@@ -1,41 +1,65 @@
-import { useEffect, useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useEffect, useState } from 'react';
+import './App.css';
 
 function App() {
+  //estado del formulario
+  const [form, setForm] = useState({
+    ci: '',
+    nombre: '',
+    apellido: '',
+    email: ''
+  });
 
+  //estado de participantes
+  const [participantes, setParticipantes] = useState([]);
+
+  //carga datos del backend
   useEffect(() => {
-  fetch("http://localhost:5000/api/reservas")
-    .then(res => res.json())
-    .then(data => console.log(data));
-}, []);
-  const [count, setCount] = useState(0)
+    fetch("http://localhost:5000/api/reservas")
+      .then(res => res.json())
+      .then(data => setParticipantes(data))
+      .catch(err => console.error(err));
+  }, []);
+
+  //manejo de submit
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!form.ci || !form.nombre) return; 
+    setParticipantes([...participantes, form]);
+    setForm({ ci: '', nombre: '', apellido: '', email: '' });
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="container">
+      <h1>Gestión de Participantes</h1>
+
+      <form onSubmit={handleSubmit}>
+        <input placeholder="CI" value={form.ci} onChange={e => setForm({ ...form, ci: e.target.value })} />
+        <input placeholder="Nombre" value={form.nombre} onChange={e => setForm({ ...form, nombre: e.target.value })} />
+        <input placeholder="Apellido" value={form.apellido} onChange={e => setForm({ ...form, apellido: e.target.value })} />
+        <input placeholder="Email" value={form.email} onChange={e => setForm({ ...form, email: e.target.value })} />
+        <button type="submit">Agregar</button>
+      </form>
+
+      <table>
+        <thead>
+          <tr>
+            <th>CI</th><th>Nombre</th><th>Apellido</th><th>Email</th>
+          </tr>
+        </thead>
+        <tbody>
+          {participantes.map(p => (
+            <tr key={p.ci}>
+              <td>{p.ci}</td>
+              <td>{p.nombre}</td>
+              <td>{p.apellido}</td>
+              <td>{p.email}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
 }
 
-export default App
+export default App;
