@@ -12,7 +12,6 @@ def hello_world():
 
 @app.route('/api/reservas')
 def get_reservas():
-    # Connect to the database
     try:
         cnx = mysql.connector.connect(
             user='root',
@@ -20,20 +19,21 @@ def get_reservas():
             host='localhost',
             database='obligatorio')
 
-        cursor = cnx.cursor()
+        cursor = cnx.cursor(dictionary=True)
         print("Conexion exitosa")
+        
+        # Execute a query
+        cursor.execute("SELECT ci, nombre, apellido, email FROM participante")
+        results = cursor.fetchall()
+        
+        cursor.close()
+        cnx.close()
+        
+        return jsonify(results)
+        
     except mysql.connector.Error as err:
-        print("Error de conexion: {}".format(err))
-        return
-    # Execute a query
-    cursor.execute("SELECT * FROM participante")
-    results = cursor.fetchall()
-
-
-    cursor.close()
-    cnx.close()
-
-    return jsonify(results)
+        print(f"Error de conexion: {err}")
+        return jsonify({"error": str(err)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
