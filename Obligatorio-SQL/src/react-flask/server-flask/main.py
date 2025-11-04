@@ -1,38 +1,42 @@
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 import mysql.connector
+from mysql.connector import Error
+from config import Config
 
 app = Flask(__name__)
-CORS(app) # Enable CORS for all routes
-
+CORS(app)  # Permitir CORS en todas las rutas
 
 @app.route('/')
-def hello_world():
-    return 'Hello World'
+def home():
+    return 'Servidor activo ✅'
 
-@app.route('/api/reservas')
+@app.route('/api/reservas', methods=['GET'])
 def get_reservas():
     try:
+        # Conectarse usando la configuración segura
         cnx = mysql.connector.connect(
-            user='root',
-            password='rootpassword',
-            host='localhost',
-            database='obligatorio')
+            host=Config.DB_HOST,
+            user=Config.DB_USER,
+            password=Config.DB_PASSWORD,
+            database=Config.DB_NAME,
+            port=Config.DB_PORT
+        )
 
         cursor = cnx.cursor(dictionary=True)
-        print("Conexion exitosa")
-        
-        # Execute a query
-        cursor.execute("SELECT ci, nombre, apellido, email FROM participante")
+
+        # Consulta segura: sin concatenar texto directamente
+        query = "SELECT ci, nombre, apellido, email FROM participante"
+        cursor.execute(query)
         results = cursor.fetchall()
-        
+
         cursor.close()
         cnx.close()
-        
+
         return jsonify(results)
-        
-    except mysql.connector.Error as err:
-        print(f"Error de conexion: {err}")
+
+    except Error as err:
+        print(f"Error en la conexión o consulta: {err}")
         return jsonify({"error": str(err)}), 500
 
 if __name__ == '__main__':
