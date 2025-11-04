@@ -1,0 +1,118 @@
+# ==================== PYTHON ====================
+# Entornos virtuales
+venv/
+env/
+ENV/
+.venv/
+
+# Archivos compilados de Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Distribución / empaquetado
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Flask
+instance/
+.webassets-cache
+
+# ==================== NODE / REACT ====================
+# Dependencias
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Build de producción
+build/
+dist/
+
+# Archivos locales de desarrollo
+.vite/
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ==================== EDITORES / IDEs ====================
+# Visual Studio Code
+.vscode/
+*.code-workspace
+
+# PyCharm
+.idea/
+*.iml
+*.iws
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# ==================== SISTEMA OPERATIVO ====================
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+.directory
+
+# ==================== BASE DE DATOS ====================
+# Archivos de base de datos locales
+*.db
+*.sqlite
+*.sqlite3
+
+# Backups de MySQL
+*.sql.backup
+*.sql.bak
+
+# ==================== LOGS ====================
+*.log
+logs/
+
+# ==================== CREDENCIALES ====================
+# Variables de entorno (NUNCA subir credenciales)
+.env
+*.env
+
+# Configuraciones locales
+config.local.py
+secrets.py
+
+# ==================== OTROS ====================
+# Archivos temporales
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+
+# Archivos de backup
+*.bak
+*.backup
