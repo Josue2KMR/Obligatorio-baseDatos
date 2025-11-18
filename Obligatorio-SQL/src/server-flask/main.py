@@ -31,7 +31,7 @@ def hello_world():
     })
 
 
-# LOGIN
+# LOGIN - AUTENTICACIÓN
 @app.route('/api/login', methods=['POST', 'OPTIONS'])
 @cross_origin()
 def login():
@@ -50,6 +50,38 @@ def login():
                     return jsonify({"success": True, "data": result}), 200
                 else:
                     return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
+    except Error as err:
+        return jsonify({"success": False, "error": str(err)}), 500
+
+
+# LOGIN - REGISTRO DE CREDENCIALES
+@app.route('/api/login/register', methods=['POST', 'OPTIONS'])
+@cross_origin()
+def register_login():
+    try:
+        data = request.get_json()
+        correo = data.get('correo')
+        contraseña = data.get('contraseña')
+
+        if not correo or not contraseña:
+            return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
+
+        with get_db_connection() as cnx:
+            with cnx.cursor() as cursor:
+                query = "INSERT INTO login (correo, contraseña) VALUES (%s, %s)"
+                try:
+                    cursor.execute(query, (correo, contraseña))
+                    cnx.commit()
+                    return jsonify({"success": True, "message": "Credenciales creadas"}), 201
+                except Error as err:
+                    # Duplicate key or foreign key errors
+                    err_msg = str(err)
+                    if hasattr(err, 'errno') and err.errno == 1062:
+                        return jsonify({"success": False, "error": "El correo ya tiene credenciales"}), 409
+                    elif hasattr(err, 'errno') and err.errno in (1452,):
+                        return jsonify({"success": False, "error": "El participante no existe (violación FK)"}), 400
+                    else:
+                        return jsonify({"success": False, "error": err_msg}), 500
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -143,38 +175,6 @@ def delete_participante(ci):
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
-
-
-        # LOGIN - REGISTER
-        @app.route('/api/login/register', methods=['POST'])
-        @cross_origin()
-        def register_login():
-            try:
-                data = request.get_json()
-                correo = data.get('correo')
-                contraseña = data.get('contraseña')
-
-                if not correo or not contraseña:
-                    return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
-
-                with get_db_connection() as cnx:
-                    with cnx.cursor() as cursor:
-                        query = "INSERT INTO login (correo, contraseña) VALUES (%s, %s)"
-                        try:
-                            cursor.execute(query, (correo, contraseña))
-                            cnx.commit()
-                            return jsonify({"success": True, "message": "Credenciales creadas"}), 201
-                        except Error as err:
-                            # Duplicate key or foreign key errors
-                            err_msg = str(err)
-                            if hasattr(err, 'errno') and err.errno == 1062:
-                                return jsonify({"success": False, "error": "El correo ya tiene credenciales"}), 409
-                            elif hasattr(err, 'errno') and err.errno in (1452,):
-                                return jsonify({"success": False, "error": "El participante no existe (violación FK)"}), 400
-                            else:
-                                return jsonify({"success": False, "error": err_msg}), 500
-            except Error as err:
-                return jsonify({"success": False, "error": str(err)}), 500
 
 
 # PROGRAMAS ACADÉMICOS

@@ -1,4 +1,3 @@
--- Active: 1761227050923@@127.0.0.1@3306@obligatorio
 DROP DATABASE IF EXISTS obligatorio;
 CREATE DATABASE obligatorio;
 USE obligatorio;
@@ -18,7 +17,8 @@ CREATE TABLE facultad(
 CREATE TABLE programa_academico(
     nombre_programa VARCHAR(100) NOT NULL PRIMARY KEY,
     id_facultad INT NOT NULL,
-    tipo VARCHAR(100) NOT NULL
+    tipo VARCHAR(100) NOT NULL,
+    FOREIGN KEY (id_facultad) REFERENCES facultad(id_facultad)
 );
 
 CREATE TABLE edificio(
@@ -39,7 +39,6 @@ CREATE TABLE login (
     FOREIGN KEY (correo) REFERENCES participante(email)
 );
 
-
 CREATE TABLE participante_programa_academico(
     id_alumno_programa INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     ci_participante INT NOT NULL,
@@ -49,8 +48,6 @@ CREATE TABLE participante_programa_academico(
     FOREIGN KEY (nombre_programa) REFERENCES programa_academico(nombre_programa)
 );
 
-
-
 CREATE TABLE sala(
     nombre_sala VARCHAR(100) NOT NULL PRIMARY KEY,
     edificio VARCHAR(100) NOT NULL,
@@ -58,7 +55,6 @@ CREATE TABLE sala(
     tipo_sala VARCHAR(100) NOT NULL,
     FOREIGN KEY (edificio) REFERENCES edificio(nombre_edificio)
 );
-
 
 CREATE TABLE reserva(
     id_reserva INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -75,8 +71,8 @@ CREATE TABLE reserva(
 CREATE TABLE reserva_participante(
     ci_participante INT NOT NULL,
     id_reserva INT NOT NULL,
-    fecha_solicitud_reserva INT NOT NULL,
-    asistencia BOOL NOT NULL,
+    fecha_solicitud_reserva DATETIME NOT NULL,
+    asistencia BOOL,
     PRIMARY KEY (ci_participante, id_reserva),
     FOREIGN KEY (ci_participante) REFERENCES participante(ci),
     FOREIGN KEY (id_reserva) REFERENCES reserva(id_reserva)
@@ -86,6 +82,6 @@ CREATE TABLE sancion_participante (
     ci_participante INT NOT NULL,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
+    PRIMARY KEY (ci_participante, fecha_inicio),
     FOREIGN KEY (ci_participante) REFERENCES participante(ci)
 );
-
