@@ -39,14 +39,19 @@ CREATE TABLE login (
     FOREIGN KEY (correo) REFERENCES participante(email)
 );
 
+
 CREATE TABLE participante_programa_academico(
     id_alumno_programa INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     ci_participante INT NOT NULL,
     nombre_programa VARCHAR(100) NOT NULL,
+    id_facultad INT NOT NULL,
     rol VARCHAR(100) NOT NULL,
     FOREIGN KEY (ci_participante) REFERENCES participante(ci),
-    FOREIGN KEY (nombre_programa) REFERENCES programa_academico(nombre_programa)
+    FOREIGN KEY (nombre_programa) REFERENCES programa_academico(nombre_programa),
+    FOREIGN KEY (id_facultad) REFERENCES facultad(id_facultad)
 );
+
+
 
 CREATE TABLE sala(
     nombre_sala VARCHAR(100) NOT NULL PRIMARY KEY,
@@ -55,6 +60,7 @@ CREATE TABLE sala(
     tipo_sala VARCHAR(100) NOT NULL,
     FOREIGN KEY (edificio) REFERENCES edificio(nombre_edificio)
 );
+
 
 CREATE TABLE reserva(
     id_reserva INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
@@ -65,14 +71,15 @@ CREATE TABLE reserva(
     estado VARCHAR(100) NOT NULL,
     FOREIGN KEY (nombre_sala) REFERENCES sala(nombre_sala),
     FOREIGN KEY (edificio) REFERENCES edificio(nombre_edificio),
-    FOREIGN KEY (id_turno) REFERENCES turno(id_turno)
+    FOREIGN KEY (id_turno) REFERENCES turno(id_turno),
+    UNIQUE (nombre_sala, fecha, id_turno)
 );
 
 CREATE TABLE reserva_participante(
     ci_participante INT NOT NULL,
     id_reserva INT NOT NULL,
     fecha_solicitud_reserva DATETIME NOT NULL,
-    asistencia BOOL,
+    asistencia BOOL NULL DEFAULT NULL,
     PRIMARY KEY (ci_participante, id_reserva),
     FOREIGN KEY (ci_participante) REFERENCES participante(ci),
     FOREIGN KEY (id_reserva) REFERENCES reserva(id_reserva)
@@ -82,6 +89,6 @@ CREATE TABLE sancion_participante (
     ci_participante INT NOT NULL,
     fecha_inicio DATE NOT NULL,
     fecha_fin DATE NOT NULL,
-    PRIMARY KEY (ci_participante, fecha_inicio),
     FOREIGN KEY (ci_participante) REFERENCES participante(ci)
 );
+

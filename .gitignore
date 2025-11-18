@@ -100,6 +100,11 @@ logs/
 # Variables de entorno (NUNCA subir credenciales)
 .env
 *.env
+**/.env
+**/*.env
+
+# Permitir ejemplos de entorno
+!.env.example
 
 # Configuraciones locales
 config.local.py
