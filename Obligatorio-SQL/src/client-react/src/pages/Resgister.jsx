@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles.css"; // Importar la stylesheet
 
 function Register({ onRegisterSuccess, onBackToLogin }) {
   const [form, setForm] = useState({
@@ -67,7 +68,7 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
         return;
       }
 
-      // 2. Crear credenciales de login (ENDPOINT CORREGIDO)
+      // 2. Crear credenciales de login
       const loginResponse = await fetch(
         "http://localhost:5000/api/login/register",
         {
@@ -99,94 +100,71 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Crear Cuenta</h1>
-        <p className="text-gray-600 mb-6">Regístrate para reservar salas</p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>Crear Cuenta</h1>
+        <p className="subtitle">Regístrate para reservar salas</p>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
-            {error}
-          </div>
-        )}
+        {error && <div className="error-message">{error}</div>}
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Cédula de Identidad
-            </label>
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <p>Cédula de Identidad</p>
             <input
               type="number"
               placeholder="12345678"
               value={form.ci}
               onChange={(e) => setForm({ ...form, ci: e.target.value })}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Nombre
-              </label>
-              <input
-                type="text"
-                placeholder="Juan"
-                value={form.nombre}
-                onChange={(e) => setForm({ ...form, nombre: e.target.value })}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Apellido
-              </label>
-              <input
-                type="text"
-                placeholder="Pérez"
-                value={form.apellido}
-                onChange={(e) => setForm({ ...form, apellido: e.target.value })}
-                disabled={loading}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
-              />
-            </div>
+          <div className="form-group">
+            <p>Nombre</p>
+            <input
+              type="text"
+              placeholder="Juan"
+              value={form.nombre}
+              onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+              disabled={loading}
+            />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Correo Electrónico
-            </label>
+          <div className="form-group">
+            <p>Apellido</p>
+            <input
+              type="text"
+              placeholder="Pérez"
+              value={form.apellido}
+              onChange={(e) => setForm({ ...form, apellido: e.target.value })}
+              disabled={loading}
+            />
+          </div>
+
+          <div className="form-group">
+            <p>Correo Electrónico</p>
             <input
               type="email"
               placeholder="tu@email.com"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
-            </label>
+          <div className="form-group">
+            <p>Contraseña</p>
             <input
               type="password"
               placeholder="Mínimo 6 caracteres"
               value={form.contraseña}
               onChange={(e) => setForm({ ...form, contraseña: e.target.value })}
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             />
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Confirmar Contraseña
-            </label>
+          <div className="form-group">
+            <p>Confirmar Contraseña</p>
             <input
               type="password"
               placeholder="Repite tu contraseña"
@@ -195,29 +173,19 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
                 setForm({ ...form, confirmarContraseña: e.target.value })
               }
               disabled={loading}
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
             />
           </div>
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-4 rounded-lg transition duration-200 disabled:bg-gray-400 disabled:cursor-not-allowed"
-          >
+          <button type="submit" disabled={loading} className="btn-primary">
             {loading ? "Registrando..." : "Crear Cuenta"}
           </button>
         </form>
 
-        <div className="mt-6 text-center">
-          <p className="text-gray-600">
-            ¿Ya tienes cuenta?{" "}
-            <button
-              onClick={onBackToLogin}
-              className="text-blue-600 hover:text-blue-700 font-medium"
-            >
-              Inicia sesión aquí
-            </button>
-          </p>
+        <div className="auth-footer">
+          <p>¿Ya tienes cuenta?</p>
+          <button onClick={onBackToLogin} className="btn-secondary">
+            Inicia sesión aquí
+          </button>
         </div>
       </div>
     </div>
