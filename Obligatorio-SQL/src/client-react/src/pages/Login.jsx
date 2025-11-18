@@ -22,7 +22,7 @@ function Login({ onLogin, onRegisterClick }) {
 
       // Verificar si el usuario existe
       const checkResponse = await fetch(
-        `http://localhost:5000/api/participante/email/${form.correo}`
+        `http://localhost:5000/api/participantes?email=${form.correo}`
       );
       const checkData = await checkResponse.json();
 
