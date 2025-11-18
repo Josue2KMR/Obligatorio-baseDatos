@@ -218,13 +218,13 @@ function Home({ user, onLogout }) {
     if (!confirm("¿Realmente desea eliminar su cuenta permanentemente?")) return;
 
     try {
-      const res = await fetch(`http://localhost:5000/api/participante/${participante.ci}`, {
+      const res = await fetch(`http://localhost:5000/api/participante/${participante.ci}/cascade`, {
         method: "DELETE"
       });
       const data = await res.json();
       
       if (data.success) {
-        alert("Cuenta eliminada");
+        alert("Cuenta eliminada correctamente");
         onLogout();
       } else {
         alert(data.error);
@@ -234,6 +234,7 @@ function Home({ user, onLogout }) {
       console.error(err);
     }
   };
+
 
   const getSalasPorTipo = (tipo) => {
     return salasDisponibles.filter(s => s.tipo_sala === tipo);

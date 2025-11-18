@@ -1,4 +1,5 @@
 import { useState } from "react";
+import "../styles.css"; 
 
 function Login({ onLogin, onRegisterClick }) {
   const [form, setForm] = useState({
@@ -20,7 +21,6 @@ function Login({ onLogin, onRegisterClick }) {
     try {
       setLoading(true);
 
-      // Verificar si el usuario existe
       const checkResponse = await fetch(
         `http://localhost:5000/api/participantes?email=${form.correo}`
       );
@@ -32,7 +32,6 @@ function Login({ onLogin, onRegisterClick }) {
         return;
       }
 
-      // Intentar login
       const loginResponse = await fetch("http://localhost:5000/api/login", {
         method: "POST",
         headers: {
@@ -57,87 +56,47 @@ function Login({ onLogin, onRegisterClick }) {
   };
 
   return (
-    <div className="auth-container" style={{display: 'flex',flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', backgroundColor: '#f0f4f8'}}>
-      <div className="auth-card" style={{display: 'flex', flexDirection:'column', justifyContent:'center', alignItems: 'center', backgroundColor: 'white', padding: '40px', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.1)', maxWidth: '500px', width: '90%'}}>
-        <h1 style={{marginBottom: 10, color: '#398495ff', textAlign: 'center'}}>Sistema de reserva de salas (hay que pensar un nombre) </h1>
-        <p className="subtitle" style={{fontSize: 20, fontWeight: 'bold', alignItems: 'center', marginBottom:20, color: '#2c3e50'}}>Iniciar sesión</p>
-        {error && <div className="error-message" style={{backgroundColor: '#fee', color: '#c33', padding: '10px', borderRadius: '6px', marginBottom: '15px', width: '100%', textAlign: 'center'}}>{error}</div>}
-        <form onSubmit={handleSubmit} style={{width: '100%'}}>
-          <div className="form-group" style={{display: 'flex', marginBottom: '15px', alignItems: 'center'}}>
-            <p style={{marginTop: 0, marginRight: 10, minWidth: '150px', fontWeight: '500', color: '#2c3e50'}}>Correo electrónico</p>
+    <div className="auth-container">
+      <div className="auth-card">
+        <h1>Sistema de reserva de salas (hay que pensar un nombre)</h1>
+        <p className="subtitle">Iniciar sesión</p>
+        
+        {error && <div className="error-message">{error}</div>}
+        
+        <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <p>Correo electrónico</p>
             <input
               type="email"
               placeholder="tu@email.com"
               value={form.correo}
               onChange={(e) => setForm({ ...form, correo: e.target.value })}
               disabled={loading}
-              style={{borderColor: '#3d76d2ff', flex: 1, padding: '8px 12px', borderRadius: '6px', border: '2px solid #3d76d2ff', fontSize: '14px'}}
             />
           </div>
 
-          <div className="form-group"  style={{display: 'flex', marginBottom: '25px', alignItems: 'center'}}>
-            <p style={{marginTop: 0, marginRight: 10, minWidth: '150px', fontWeight: '500', color: '#2c3e50'}}>Contraseña</p>
+          <div className="form-group">
+            <p>Contraseña</p>
             <input
               type="password"
               placeholder="••••••••"
               value={form.contraseña}
               onChange={(e) => setForm({ ...form, contraseña: e.target.value })}
               disabled={loading}
-              style={{borderColor: '#3d76d2ff', flex: 1, padding: '8px 12px', borderRadius: '6px', border: '2px solid #3d76d2ff', fontSize: '14px'}}
             />
           </div>
 
-          <button 
-            type="submit" 
-            className="btn-primary" 
-            disabled={loading} 
-            style={{
-              width: '100%',
-              padding: '12px',
-              backgroundColor: '#5865F2',
-              color: 'white',
-              border: 'none',
-              borderRadius: '8px',
-              fontSize: '16px',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              transition: 'all 0.3s ease',
-              opacity: loading ? 0.6 : 1
-            }}
-            onMouseOver={(e) => !loading && (e.target.style.backgroundColor = '#4752C4')}
-            onMouseOut={(e) => !loading && (e.target.style.backgroundColor = '#5865F2')}
-          >
+          <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
         </form>
 
-        <div className="auth-footer" style={{marginTop: '25px', textAlign: 'center', width: '100%'}}>
-          <p style={{color: '#5a6c7d', fontSize: '14px', marginBottom: '10px'}}>
-            ¿No tienes cuenta?
-          </p>
+        <div className="auth-footer">
+          <p>¿No tienes cuenta?</p>
           <button 
             type="button" 
             onClick={onRegisterClick} 
-            className="link-button"
-            style={{
-              backgroundColor: 'transparent',
-              color: '#398495ff',
-              border: '2px solid #398495ff',
-              padding: '8px 24px',
-              borderRadius: '8px',
-              fontSize: '14px',
-              fontWeight: '600',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease'
-            }}
-            onMouseOver={(e) => {
-              e.target.style.backgroundColor = '#398495ff';
-              e.target.style.color = 'white';
-            }}
-            onMouseOut={(e) => {
-              e.target.style.backgroundColor = 'transparent';
-              e.target.style.color = '#398495ff';
-            }}
+            className="btn-secondary"
           >
             Regístrate aquí
           </button>

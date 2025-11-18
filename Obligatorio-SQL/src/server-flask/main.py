@@ -12,16 +12,6 @@ CORS(app)  # CORS configurado globalmente
 
 db_initialized = False
 
-@app.before_request
-def initialize_database():
-    global db_initialized
-    if not db_initialized:
-        if init_db():
-            test_connection()
-            db_initialized = True
-        else:
-            print("Fallo al inicializar la base de datos")
-
 
 # ==================== LOGIN ====================
 
@@ -255,7 +245,6 @@ def get_participante_rol(ci):
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
     
-    
 @app.route('/api/participante/<ci>/cascade', methods=['DELETE'])
 def delete_participante_cascade(ci):
     """
@@ -264,28 +253,50 @@ def delete_participante_cascade(ci):
     try:
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
+
                 # Verificar existencia
-                cursor.execute("SELECT ci FROM participante WHERE ci = %s", (ci,))
-                if not cursor.fetchone():
+                cursor.execute("SELECT ci, email FROM participante WHERE ci = %s", (ci,))
+                participante_data = cursor.fetchone()
+
+                if not participante_data:
                     return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+
+                # Guardar correo ANTES de la transacción (evita error "transaction in progress")
+                correo_participante = participante_data["email"]
 
                 try:
                     cnx.start_transaction()
 
                     # 1. Eliminar sanciones
-                    cursor.execute("DELETE FROM sancion_participante WHERE ci_participante = %s", (ci,))
+                    cursor.execute(
+                        "DELETE FROM sancion_participante WHERE ci_participante = %s", 
+                        (ci,)
+                    )
 
                     # 2. Eliminar relación con reservas
-                    cursor.execute("DELETE FROM reserva_participante WHERE ci_participante = %s", (ci,))
+                    cursor.execute(
+                        "DELETE FROM reserva_participante WHERE ci_participante = %s", 
+                        (ci,)
+                    )
 
                     # 3. Eliminar relación con programas académicos
-                    cursor.execute("DELETE FROM participante_programa_academico WHERE ci_participante = %s", (ci,))
+                    cursor.execute(
+                        "DELETE FROM participante_programa_academico WHERE ci_participante = %s", 
+                        (ci,)
+                    )
 
-                    # 4. Eliminar credenciales de login
-                    cursor.execute("DELETE FROM login WHERE correo IN (SELECT email FROM participante WHERE ci = %s)", (ci,))
+                    # 4. Eliminar credenciales de login (ya sin subquery)
+                    if correo_participante:
+                        cursor.execute(
+                            "DELETE FROM login WHERE correo = %s", 
+                            (correo_participante,)
+                        )
 
-                    # 5. Finalmente eliminar el participante
-                    cursor.execute("DELETE FROM participante WHERE ci = %s", (ci,))
+                    # 5. Finalmente eliminar al participante
+                    cursor.execute(
+                        "DELETE FROM participante WHERE ci = %s", 
+                        (ci,)
+                    )
 
                     cnx.commit()
                     return jsonify({"success": True, "message": "Participante y todas sus relaciones eliminadas"}), 200
@@ -296,9 +307,6 @@ def delete_participante_cascade(ci):
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
-    
-    
-
 
 # ==================== PROGRAMAS ACADÉMICOS ====================
 
