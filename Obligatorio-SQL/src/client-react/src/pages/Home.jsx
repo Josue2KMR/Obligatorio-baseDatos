@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Calendar, Clock, Users, AlertCircle, User, LogOut, BookOpen, X, Check, XCircle } from "lucide-react";
+import { Calendar, Clock, Users, AlertCircle, User, LogOut, Book, X, Check, XCircle, FileX, Database } from "lucide-react";
 
 function Home({ user, onLogout }) {
   const [activeView, setActiveView] = useState("dashboard");
@@ -21,6 +21,9 @@ function Home({ user, onLogout }) {
   const [fechaReserva, setFechaReserva] = useState("");
   const [turnoSeleccionado, setTurnoSeleccionado] = useState("");
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
+
+  //Para estilos
+  const [hover, setHover] = useState(false);
 
   useEffect(() => {
     if (activeView === "dashboard") {
@@ -251,141 +254,465 @@ function Home({ user, onLogout }) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{minHeight: "100vh",backgroundColor: "#F9FAFB"}}>
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+      <header style={{
+                backgroundColor: "white",
+                boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",
+                borderBottomWidth: 1,
+                borderBottomStyle: "solid",
+                borderBottomColor: "#E5E7EB"
+              }}
+              >
+        <div style={{
+              maxWidth: "1280px",          // max-w-7xl
+              marginLeft: "auto",          // mx-auto
+              marginRight: "auto",
+              paddingLeft: 16,             // px-4
+              paddingRight: 16,
+              paddingTop: 16,              // py-4
+              paddingBottom: 16,
+              display: "flex",             // flex
+              alignItems: "center",        // items-center
+              justifyContent: "space-between" // justify-between
+            }}
+            >
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Sistema de Reservas UCU</h1>
-            <p className="text-sm text-gray-600 mt-1">{user?.correo}</p>
+            <h1 style={{
+                  fontSize: "1.5rem",  // text-2xl
+                  fontWeight: 700,     // font-bold
+                  color: "#111827"     // text-gray-900
+                }}
+                >OneRoom UCU</h1>
+            <p style={{
+                fontSize: "0.875rem", // text-sm
+                color: "#4B5563",     // text-gray-600
+                marginTop: 4          // mt-1
+              }}
+              >{user?.correo}</p>
           </div>
           
-          <nav className="flex items-center gap-2">
+          <nav style={{
+            display: "flex",
+            justifyItems: "center",
+            alignItems: "center",
+            gap: 10
+          }}className="flex items-center gap-2">
             <button
-              onClick={() => setActiveView("dashboard")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeView === "dashboard"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              <Calendar className="w-4 h-4 inline mr-2" />
-              Dashboard
-            </button>
+            onClick={() => setActiveView("dashboard")}
+            style={{
+              padding: "8px 16px",                          // px-4 py-2
+              borderRadius: "8px",                          // rounded-lg
+              fontWeight: 500,                              // font-medium
+              transition: "background-color 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",                                    // icono separado del texto
+              backgroundColor:
+                activeView === "dashboard" ? "#2563eb" : "#f3f4f6",   // blue-600 / gray-100
+              color:
+                activeView === "dashboard" ? "white" : "#374151",     // white / gray-700
+              cursor: "pointer",
+                border: "none",
+            }}
+            onMouseEnter={(e) => {
+              if (activeView !== "dashboard") {
+                e.target.style.backgroundColor = "#e5e7eb"; // hover gray-200
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeView !== "dashboard") {
+                e.target.style.backgroundColor = "#f3f4f6"; // gray-100
+              }
+            }}
+          >
+            <Calendar style={{ width: "16px", height: "16px" }} />
+            Dashboard
+          </button>
             
-            <button
-              onClick={() => setActiveView("reservar")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeView === "reservar"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              <BookOpen className="w-4 h-4 inline mr-2" />
-              Reservar
-            </button>
-            
-            <button
-              onClick={() => setActiveView("profile")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                activeView === "profile"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              <User className="w-4 h-4 inline mr-2" />
-              Perfil
-            </button>
+          <button
+            onClick={() => setActiveView("reservar")}
+            style={{
+              padding: "8px 16px",                          // px-4 py-2
+              borderRadius: "8px",                          // rounded-lg
+              fontWeight: 500,                              // font-medium
+              transition: "background-color 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",                                    // icono separado del texto
+              backgroundColor:
+                activeView === "reservar" ? "#2563eb" : "#f3f4f6",   // blue-600 / gray-100
+              color:
+                activeView === "reservar" ? "white" : "#374151",     // white / gray-700
+              cursor: "pointer",
+                border: "none",
+            }}
+            onMouseEnter={(e) => {
+              if (activeView !== "reservar") {
+                e.target.style.backgroundColor = "#e5e7eb"; // hover gray-200
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeView !== "reservar") {
+                e.target.style.backgroundColor = "#f3f4f6"; // gray-100
+              }
+            }}
+          >
+            <Book style={{ width: "16px", height: "16px" }} />
+            Reservar
+          </button>
+
+
+          <button
+            onClick={() => setActiveView("profile")}
+            style={{
+              padding: "8px 16px",                          // px-4 py-2
+              borderRadius: "8px",                          // rounded-lg
+              fontWeight: 500,                              // font-medium
+              transition: "background-color 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",                                    // icono separado del texto
+              backgroundColor:
+                activeView === "profile" ? "#2563eb" : "#f3f4f6",   // blue-600 / gray-100
+              color:
+                activeView === "profile" ? "white" : "#374151",     // white / gray-700
+              cursor: "pointer",
+                border: "none",
+            }}
+            onMouseEnter={(e) => {
+              if (activeView !== "profile") {
+                e.target.style.backgroundColor = "#e5e7eb"; // hover gray-200
+              }
+            }}
+            onMouseLeave={(e) => {
+              if (activeView !== "profile") {
+                e.target.style.backgroundColor = "#f3f4f6"; // gray-100
+              }
+            }}
+          >
+            <User style={{ width: "16px", height: "16px" }} />
+            Perfil
+          </button>
           </nav>
         </div>
       </header>
 
       {/* Content */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
+      <main style={{
+              maxWidth: "1280px",   // max-w-7xl
+              marginLeft: "auto",   // mx-auto
+              marginRight: "auto",
+              paddingLeft: 16,      // px-4
+              paddingRight: 16,
+              paddingTop: 32,       // py-8
+              paddingBottom: 32
+            }}
+            >
         {loading ? (
-          <div className="text-center py-12">
-            <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-            <p className="mt-4 text-gray-600">Cargando...</p>
+          <div style={{
+                textAlign: "center",  // text-center
+                paddingTop: 48,       // py-12
+                paddingBottom: 48
+              }}
+              >
+            <div style={{
+                  display: "inline-block",
+                  borderRadius: "9999px",     // rounded-full
+                  height: 48,                 // h-12
+                  width: 48,                  // w-12
+                  borderBottomWidth: 2,       // border-b-2
+                  borderBottomColor: "#2563EB", // border-blue-600
+                  borderStyle: "solid"
+                }}></div>
+            <p style={{marginTop: 16, color: "#4B5563" }}
+            >Cargando...</p>
           </div>
         ) : (
           <>
             {/* DASHBOARD */}
             {activeView === "dashboard" && (
-              <div className="space-y-6">
+              <div style={{
+                    display: "flex",
+                    flexDirection: "column",  // dirección vertical
+                    rowGap: 24                // espacio vertical entre hijos
+                  }}
+                  >
                 {/* Stats Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between">
+                <div style={{
+                      display: "grid",
+                      gridTemplateColumns: "repeat(1, 1fr)",  // por defecto 1 columna
+                      gap: 24                                // gap-6
+                    }}
+                    >
+                  <div style={{
+                        backgroundColor: "white",                     // bg-white
+                        padding: 24,                                  // p-6
+                        borderRadius: 8,                              // rounded-lg
+                        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",  // shadow-sm
+                        border: "1px solid #E5E7EB"                  // border + border-gray-200
+                      }}
+                      >
+                    <div style={{
+                          display: "flex",             // flex
+                          alignItems: "center",        // items-center
+                          justifyContent: "space-between" // justify-between
+                        }}
+                        >
                       <div>
-                        <p className="text-sm text-gray-600">Salas Totales</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{salas.length}</p>
+                        <p style={{
+                            fontSize: "0.875rem", // text-sm
+                            color: "#4B5563"      // text-gray-600
+                          }}
+                          >Salas Totales</p>
+                        <p style={{
+                            fontSize: "1.875rem", // text-3xl
+                            fontWeight: 700,      // font-bold
+                            color: "#111827",     // text-gray-900
+                            marginTop: 4          // mt-1
+                          }}
+                          >{salas.length}</p>
                       </div>
-                      <Calendar className="w-10 h-10 text-blue-600" />
+                      <Calendar style={{
+                                  width: 40,        // w-10
+                                  height: 40,       // h-10
+                                  color: "#2563EB"  // text-blue-600
+                                }}
+                                />
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between">
+                  <div style={{
+                          backgroundColor: "white",                     // bg-white
+                          padding: 24,                                  // p-6
+                          borderRadius: 8,                              // rounded-lg
+                          boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",  // shadow-sm
+                          border: "1px solid #E5E7EB"                  // border + border-gray-200
+                        }}
+                        >
+                    <div style={{
+                          display: "flex",             // flex
+                          alignItems: "center",        // items-center
+                          justifyContent: "space-between" // justify-between
+                        }}
+                        >
                       <div>
-                        <p className="text-sm text-gray-600">Turnos</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{turnos.length}</p>
+                        <p style={{
+                            fontSize: "0.875rem", // text-sm
+                            color: "#4B5563"      // text-gray-600
+                          }}
+                          >Turnos</p>
+                        <p style={{
+                            fontSize: "1.875rem", // text-3xl
+                            fontWeight: 700,      // font-bold
+                            color: "#111827",     // text-gray-900
+                            marginTop: 4          // mt-1
+                          }}>{turnos.length}</p>
                       </div>
-                      <Clock className="w-10 h-10 text-green-600" />
+                      <Clock style={{
+                                  width: 40,        // w-10
+                                  height: 40,       // h-10
+                                  color: "#2563EB"  // text-blue-600
+                                }}/>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between">
+                  <div style={{
+                        backgroundColor: "white",                     // bg-white
+                        padding: 24,                                  // p-6
+                        borderRadius: 8,                              // rounded-lg
+                        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",  // shadow-sm
+                        border: "1px solid #E5E7EB"                  // border + border-gray-200
+                      }}
+                      >
+                    <div style={{
+                          display: "flex",             // flex
+                          alignItems: "center",        // items-center
+                          justifyContent: "space-between" // justify-between
+                        }}
+                        >
                       <div>
-                        <p className="text-sm text-gray-600">Reservas Hoy</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">{reservasHoy.length}</p>
+                        <p style={{
+                            fontSize: "0.875rem", // text-sm
+                            color: "#4B5563"      // text-gray-600
+                          }}
+                          >Reservas Hoy</p>
+                        <p style={{
+                            fontSize: "1.875rem", // text-3xl
+                            fontWeight: 700,      // font-bold
+                            color: "#111827",     // text-gray-900
+                            marginTop: 4          // mt-1
+                          }}>{reservasHoy.length}</p>
                       </div>
-                      <Users className="w-10 h-10 text-purple-600" />
+                      <Users style={{
+                                  width: 40,        // w-10
+                                  height: 40,       // h-10
+                                  color: "#2563EB"  // text-blue-600
+                                }}/>
                     </div>
                   </div>
 
-                  <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex items-center justify-between">
+                  <div style={{
+                        backgroundColor: "white",                     // bg-white
+                        padding: 24,                                  // p-6
+                        borderRadius: 8,                              // rounded-lg
+                        boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",  // shadow-sm
+                        border: "1px solid #E5E7EB"                  // border + border-gray-200
+                      }}
+                      >
+                    <div style={{
+                          display: "flex",             // flex
+                          alignItems: "center",        // items-center
+                          justifyContent: "space-between" // justify-between
+                        }}
+                        >
                       <div>
-                        <p className="text-sm text-gray-600">Ocupación</p>
-                        <p className="text-3xl font-bold text-gray-900 mt-1">
+                        <p style={{
+                            fontSize: "0.875rem", // text-sm
+                            color: "#4B5563"      // text-gray-600
+                          }}
+                          >Ocupación</p>
+                        <p style={{
+                            fontSize: "1.875rem", // text-3xl
+                            fontWeight: 700,      // font-bold
+                            color: "#111827",     // text-gray-900
+                            marginTop: 4          // mt-1
+                          }}>
                           {((reservasHoy.length / (salas.length * turnos.length)) * 100).toFixed(0)}%
                         </p>
                       </div>
-                      <AlertCircle className="w-10 h-10 text-orange-600" />
+                      <AlertCircle style={{
+                                  width: 40,        // w-10
+                                  height: 40,       // h-10
+                                  color: "#2563EB"  // text-blue-600
+                                }}/>
                     </div>
                   </div>
                 </div>
 
                 {/* Salas Más Demandadas */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Salas Más Reservadas</h2>
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                <div style={{
+                      backgroundColor: "white",                     // bg-white
+                      borderRadius: 8,                              // rounded-lg
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",  // shadow-sm
+                      border: "1px solid #E5E7EB",                 // border + border-gray-200
+                      padding: 24                                   // p-6
+                    }}
+                    >
+                  <h2 style={{
+                        fontSize: "1.25rem", // text-xl
+                        fontWeight: 700,     // font-bold
+                        color: "#111827",    // text-gray-900
+                        marginBottom: 16     // mb-4
+                      }}
+                      >Salas Más Reservadas</h2>
+                  <div style={{overflowX: "auto"}}>
+                    <table style={{width: "100%"}}>
+                      <thead  style={{
+                                backgroundColor: "#F9FAFB",   // bg-gray-50
+                                borderBottomWidth: 1,         // border-b
+                                borderBottomStyle: "solid",   // necesario para que el borde se vea
+                                borderBottomColor: "#E5E7EB"  // border-gray-200
+                              }}
+                              >
                         <tr>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Sala</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Edificio</th>
-                          <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total Reservas</th>
+                          <th style={{
+                                paddingLeft: 16,          // px-4
+                                paddingRight: 16,
+                                paddingTop: 12,           // py-3
+                                paddingBottom: 12,
+                                textAlign: "left",        // text-left
+                                fontSize: "0.75rem",      // text-xs
+                                fontWeight: 600,          // font-semibold
+                                color: "#4B5563",         // text-gray-600
+                                textTransform: "uppercase"// uppercase
+                              }}
+                              >Sala</th>
+                          <th style={{
+                                paddingLeft: 16,          // px-4
+                                paddingRight: 16,
+                                paddingTop: 12,           // py-3
+                                paddingBottom: 12,
+                                textAlign: "left",        // text-left
+                                fontSize: "0.75rem",      // text-xs
+                                fontWeight: 600,          // font-semibold
+                                color: "#4B5563",         // text-gray-600
+                                textTransform: "uppercase"// uppercase
+                              }}
+                              >Edificio</th>
+                          <th style={{
+                                paddingLeft: 16,          // px-4
+                                paddingRight: 16,
+                                paddingTop: 12,           // py-3
+                                paddingBottom: 12,
+                                textAlign: "left",        // text-left
+                                fontSize: "0.75rem",      // text-xs
+                                fontWeight: 600,          // font-semibold
+                                color: "#4B5563",         // text-gray-600
+                                textTransform: "uppercase"// uppercase
+                              }}
+                              >Total Reservas</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
-                        {salasMasDemandadas.slice(0, 5).map((sala, idx) => (
-                          <tr key={idx} className="hover:bg-gray-50">
-                            <td className="px-4 py-3 text-sm text-gray-900">{sala.nombre_sala}</td>
-                            <td className="px-4 py-3 text-sm text-gray-600">{sala.edificio}</td>
-                            <td className="px-4 py-3 text-sm text-gray-900 font-medium">{sala.total_reservas}</td>
-                          </tr>
-                        ))}
-                      </tbody>
+                     <tbody>
+                      {salasMasDemandadas.slice(0, 5).map((sala, idx) => (
+                        <tr
+                          key={idx}
+                          style={{
+                            backgroundColor: "#ffffff", // fondo default
+                            borderTop: idx === 0 ? "none" : "1px solid #E5E7EB", // divide-y divide-gray-200
+                          }}
+                          onMouseEnter={e => e.currentTarget.style.backgroundColor = "#F9FAFB"} // hover:bg-gray-50
+                          onMouseLeave={e => e.currentTarget.style.backgroundColor = "#ffffff"}
+                        >
+                          <td style={{
+                            padding: "12px 16px",      // py-3 px-4
+                            fontSize: "0.875rem",      // text-sm
+                            color: "#111827"           // text-gray-900
+                          }}>{sala.nombre_sala}</td>
+
+                          <td style={{
+                            padding: "12px 16px",
+                            fontSize: "0.875rem",
+                            color: "#4B5563"           // text-gray-600
+                          }}>{sala.edificio}</td>
+
+                          <td style={{
+                            padding: "12px 16px",
+                            fontSize: "0.875rem",
+                            fontWeight: 500,           // font-medium
+                            color: "#111827"
+                          }}>{sala.total_reservas}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+
                     </table>
                   </div>
                 </div>
 
                 {/* Estado de Salas Hoy */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Estado de Salas Hoy</h2>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div style={{
+                      backgroundColor: "white",                     // bg-white
+                      borderRadius: 8,                              // rounded-lg
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",  // shadow-sm
+                      border: "1px solid #E5E7EB",                 // border + border-gray-200
+                      padding: 24                                   // p-6
+                    }}
+                    >
+                  <h2 style={{
+                        fontSize: "1.25rem", // text-xl
+                        fontWeight: 700,     // font-bold
+                        color: "#111827",    // text-gray-900
+                        marginBottom: 16     // mb-4
+                      }}
+                      >Estado de Salas Hoy</h2>
+                  <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "repeat(1, 1fr)",  // 1 columna por defecto
+                        gap: 16                                 // gap-4
+                      }}
+                      >
                     {salas.map((sala) => {
                       const reservasEnSala = reservasHoy.filter(
                         r => r.nombre_sala === sala.nombre_sala && r.edificio === sala.edificio
@@ -395,24 +722,47 @@ function Home({ user, onLogout }) {
                       return (
                         <div
                           key={`${sala.nombre_sala}-${sala.edificio}`}
-                          className={`p-4 rounded-lg border-2 ${
-                            ocupada ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"
-                          }`}
+                          style={{
+                            padding: 16,                     // p-4
+                            borderRadius: 8,                  // rounded-lg
+                            borderWidth: 2,                   // border-2
+                            borderStyle: "solid",             // necesario para que el borde se vea
+                            borderColor: ocupada ? "#FCA5A5" : "#86EFAC", // color según estado
+                            backgroundColor: ocupada ? "#FEF2F2" : "#ECFDF5" // fondo según estado
+                          }}
                         >
-                          <div className="flex items-center justify-between mb-2">
-                            <h3 className="font-semibold text-gray-900">{sala.nombre_sala}</h3>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${
-                              ocupada ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800"
-                            }`}>
-                              {ocupada ? "Ocupada" : "Disponible"}
+                          <div style={{
+                                display: "flex",             // flex
+                                alignItems: "center",        // items-center
+                                justifyContent: "space-between", // justify-between
+                                marginBottom: 8              // mb-2
+                              }}
+                              >
+                            <h3 style={{
+                                  fontWeight: 600,     // font-semibold
+                                  color: "#111827"     // text-gray-900
+                                }}
+                                >{sala.nombre_sala}</h3>
+                            <span style={{
+                                    paddingLeft: 8,                     // px-2
+                                    paddingRight: 8,
+                                    paddingTop: 4,                      // py-1
+                                    paddingBottom: 4,
+                                    borderRadius: 4,                     // rounded
+                                    fontSize: "0.75rem",                // text-xs
+                                    fontWeight: 500,                     // font-medium
+                                    backgroundColor: ocupada ? "#FCA5A5" : "#BBF7D0", // bg-red-200 / bg-green-200
+                                    color: ocupada ? "#991B1B" : "#166534"             // text-red-800 / text-green-800
+                                  }}
+                                  >
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600">{sala.edificio}</p>
-                          <p className="text-xs text-gray-500 mt-1">
+                          <p style={{fontSize: "0.875rem", color: "#4B5563"}}>{sala.edificio}</p>
+                          <p style={{fontSize: "0.75rem",  color: "#6B7280", marginTop: 4}}>
                             Capacidad: {sala.capacidad} | Tipo: {sala.tipo_sala}
                           </p>
                           {ocupada && (
-                            <p className="text-xs text-red-600 mt-2">
+                            <p style={{fontSize: "0.75rem", color: "#DC2626", marginTop: 8}}>
                               {reservasEnSala.length} reserva(s) activa(s)
                             </p>
                           )}
@@ -426,44 +776,144 @@ function Home({ user, onLogout }) {
 
             {/* PERFIL */}
             {activeView === "profile" && participante && (
-              <div className="space-y-6">
+              <div style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: "1.5rem"
+              }}>
                 {/* Info Personal */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <div className="flex items-center justify-between mb-6">
-                    <h2 className="text-xl font-bold text-gray-900">Mi Perfil</h2>
+                <div style={{
+                  backgroundColor: "white",             // bg-white
+                  borderRadius: "8px",                  // rounded-lg
+                  boxShadow: "0 1px 2px rgba(0,0,0,0.05)", // shadow-sm
+                  border: "1px solid #e5e7eb",          // border + border-gray-200
+                  padding: "1.5rem"                     // p-6 => 24px
+                }}
+                >                       
+                  <div style={{
+                    display: "flex",
+                    flexDirection: "row",       // "flex"
+                    alignItems: "center",       // "items-center"
+                    justifyContent: "space-between", // "justify-between"
+                    marginBottom: 24            // "mb-6" (6 * 4px = 24px)
+                  }}
+                  >
+                    <h2 style={{
+                      fontSize: 20,          // text-xl → 20px
+                      fontWeight: "bold",    // font-bold
+                      color: "#111827"       // text-gray-900
+                    }}
+                    >Mi Perfil</h2>
                     <button
                       onClick={onLogout}
-                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                      style={{
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingTop: 8,
+                        paddingBottom: 8,                          // px-4 py-2
+                        borderRadius: 8,                          // rounded-lg                            
+                        transition: "background-color 0.2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,                                    // icono separado del texto
+                        backgroundColor: hover ? "#2855b7ff" : "#2563eb",
+                        cursor: "pointer",
+                        color: "#fff"
+                      }}
+                      onMouseEnter={() => setHover(true)}
+                      onMouseLeave={() => setHover(false)}
                     >
-                      <LogOut className="w-4 h-4" />
+                      <LogOut style={{ width: 16, height: 16 }}/>
                       Cerrar Sesión
                     </button>
                   </div>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div style={{
+                        display: "grid",
+                        gridTemplateColumns: "1fr",
+                        gap: 16, // 4 = 1rem = 16px
+                      }}
+                      >
                     <div>
-                      <label className="text-sm font-medium text-gray-600">CI</label>
-                      <p className="text-lg text-gray-900">{participante.ci}</p>
+                      <label style={{
+                              fontSize: "14px",         // text-sm = 0.875rem = 14px
+                              fontWeight: 500,          // font-medium
+                              color: "#4B5563"          // text-gray-600
+                            }}
+                            >CI</label>
+                      <p style={{
+                          fontSize: "18px",   // text-lg = 1.125rem = 18px
+                          color: "#111827"    // text-gray-900
+                        }}
+                        >{participante.ci}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Email</label>
-                      <p className="text-lg text-gray-900">{participante.email}</p>
+                      <label style={{
+                              fontSize: "14px",    // text-sm = 0.875rem
+                              fontWeight: 500,     // font-medium
+                              color: "#4B5563"     // text-gray-600
+                            }}
+                            >Email</label>
+                      <p style={{
+                          fontSize: "18px",   // text-lg = 1.125rem
+                          color: "#111827"    // text-gray-900
+                        }}
+                        >{participante.email}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Nombre</label>
-                      <p className="text-lg text-gray-900">{participante.nombre}</p>
+                      <label style={{
+                              fontSize: "14px",     // text-sm = 0.875rem
+                              fontWeight: 500,       // font-medium
+                              color: "#4B5563"       // text-gray-600
+                            }}
+                            >Nombre</label>
+                      <p style={{
+                          fontSize: "18px",   // text-lg = 1.125rem
+                          color: "#111827"    // text-gray-900
+                        }}
+                        >{participante.nombre}</p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-600">Apellido</label>
-                      <p className="text-lg text-gray-900">{participante.apellido}</p>
+                      <label style={{
+                              fontSize: "14px",     // text-sm = 0.875rem
+                              fontWeight: 500,       // font-medium
+                              color: "#4B5563"       // text-gray-600
+                            }}
+                            >Apellido</label>
+                      <p style={{
+                          fontSize: "18px",   // text-lg = 1.125rem
+                          color: "#111827"    // text-gray-900
+                        }}
+                        >{participante.apellido}</p>
                     </div>
                   </div>
 
-                  <div className="mt-6 pt-6 border-t border-gray-200">
+                  <div style={{
+                        marginTop: 24,           // mt-6 = 1.5rem = 24px
+                        paddingTop: 24,          // pt-6 = 24px
+                        borderTop: "1px solid #E5E7EB"  // border-t border-gray-200
+                      }}
+                      >
                     <button
                       onClick={eliminarCuenta}
-                      className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                      style={{
+                        paddingLeft: 16,
+                        paddingRight: 16,
+                        paddingTop: 8,
+                        paddingBottom: 8,                          // px-4 py-2
+                        borderRadius: 8,                          // rounded-lg                            
+                        transition: "background-color 0.2s ease",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,                                    // icono separado del texto
+                        backgroundColor: hover ? "#2855b7ff" : "#2563eb",
+                        cursor: "pointer",
+                        color: "#fff"
+                      }}
+                      onMouseEnter={() => setHover(true)}
+                      onMouseLeave={() => setHover(false)}
                     >
+                      <AlertCircle/>
                       Eliminar Cuenta
                     </button>
                   </div>
@@ -471,17 +921,50 @@ function Home({ user, onLogout }) {
 
                 {/* Sanciones */}
                 {misSanciones.length > 0 && (
-                  <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-                    <h2 className="text-xl font-bold text-red-900 mb-4 flex items-center gap-2">
-                      <AlertCircle className="w-6 h-6" />
+                  <div
+                    style={{
+                      backgroundColor: "#FEF2F2",       // bg-red-50
+                      border: "2px solid #FCA5A5",      // border-2 border-red-300
+                      borderRadius: 8,                  // rounded-lg
+                      padding: 24                       // p-6
+                    }}
+                  >
+                    <h2
+                      style={{
+                        fontSize: "20px",               // text-xl
+                        fontWeight: "bold",             // font-bold
+                        color: "#7F1D1D",               // text-red-900
+                        marginBottom: 16,               // mb-4
+                        display: "flex",                // flex
+                        alignItems: "center",           // items-center
+                        gap: 8                          // gap-2
+                      }}
+                    >
+                      <AlertCircle style={{ width: 24, height: 24 }} /> {/* w-6 h-6 */}
                       Sanciones Activas
                     </h2>
-                    <div className="space-y-3">
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                       {misSanciones.map((sancion, idx) => (
-                        <div key={idx} className="bg-white p-4 rounded-lg border border-red-200">
-                          <p className="text-sm text-gray-600">
-                            Desde: <span className="font-medium">{sancion.fecha_inicio}</span> hasta{" "}
-                            <span className="font-medium">{sancion.fecha_fin}</span>
+                        <div
+                          key={idx}
+                          style={{
+                            backgroundColor: "white",         // bg-white
+                            padding: 16,                      // p-4
+                            borderRadius: 8,                  // rounded-lg
+                            border: "1px solid #FECACA"       // border-red-200
+                          }}
+                        >
+                          <p
+                            style={{
+                              fontSize: "14px",               // text-sm
+                              color: "#4B5563"                // text-gray-600
+                            }}
+                          >
+                            Desde:{" "}
+                            <span style={{ fontWeight: 500 }}>{sancion.fecha_inicio}</span>{" "}
+                            hasta{" "}
+                            <span style={{ fontWeight: 500 }}>{sancion.fecha_fin}</span>
                           </p>
                         </div>
                       ))}
@@ -489,40 +972,123 @@ function Home({ user, onLogout }) {
                   </div>
                 )}
 
+
                 {/* Mis Reservas */}
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-4">Mis Reservas</h2>
+                <div style={{
+                      backgroundColor: "white",                        // bg-white  
+                      borderRadius: 8,                                 // rounded-lg (≈ 0.5rem → 8px)  
+                      boxShadow: "0 1px 2px rgba(0, 0, 0, 0.05)",       // shadow-sm  
+                      border: "1px solid #E5E7EB",                      // border + border-gray-200  
+                      padding: 24                                      // p-6 (1.5rem → 24px)  
+                    }}
+                    >
+                  <h2 style={{
+                        fontSize: 20,                 // text-xl (≈ 1.25rem → 20px)
+                        fontWeight: "bold",           // font-bold
+                        color: "#111827",             // text-gray-900
+                        marginBottom: 16              // mb-4 (1rem → 16px)
+                      }}
+                      >Mis Reservas</h2>
                   {misReservas.length === 0 ? (
-                    <p className="text-gray-600">No tienes reservas activas</p>
+                    <p style={{
+                        color: "#4B5563"   // text-gray-600
+                      }}
+                      >No tienes reservas activas</p>
                   ) : (
-                    <div className="space-y-3">
+                    <div style={{
+                          display: "flex",
+                          flexDirection: "column",  // Tailwind crea separación vertical
+                          rowGap: 12                // space-y-3 → 3 * 4px = 12px
+                        }}
+                        >
                       {misReservas.map((reserva) => (
                         <div
                           key={reserva.id_reserva}
-                          className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+                          style={{
+                            padding: 16,                 // p-4 → 16px
+                            border: "1px solid #E5E7EB", // border + border-gray-200
+                            borderRadius: 8,             // rounded-lg
+                            backgroundColor: hover ? "#F9FAFB" : "white" // hover:bg-gray-50 (#F9FAFB)
+                          }}
+                          onMouseEnter={() => setHover(true)}
+                          onMouseLeave={() => setHover(false)}
                         >
-                          <div className="flex items-center justify-between">
+                          <div style={{
+                                display: "flex",          // flex
+                                alignItems: "center",     // items-center
+                                justifyContent: "space-between" // justify-between
+                              }}
+                              >
                             <div>
-                              <h3 className="font-semibold text-gray-900">
+                              <h3 style={{
+                                    fontWeight: 600,      // font-semibold
+                                    color: "#111827"      // text-gray-900
+                                  }}
+                                  >
                                 {reserva.nombre_sala} - {reserva.edificio}
                               </h3>
-                              <p className="text-sm text-gray-600 mt-1">
+                              <p style={{
+                                  fontSize: "0.875rem",   // text-sm
+                                  color: "#4B5563",       // text-gray-600
+                                  marginTop: 4            // mt-1 (1 * 4px)
+                                }}
+                                >
                                 Fecha: {reserva.fecha} | Turno: {reserva.id_turno}
                               </p>
-                              <span className={`inline-block mt-2 px-2 py-1 rounded text-xs font-medium ${
-                                reserva.estado === "activa" ? "bg-green-100 text-green-800" :
-                                reserva.estado === "cancelada" ? "bg-red-100 text-red-800" :
-                                "bg-gray-100 text-gray-800"
-                              }`}>
+                              <span style={{
+                                      display: "inline-block",          // inline-block
+                                      marginTop: 8,                     // mt-2 → 2 * 4px
+                                      paddingLeft: 8,                   // px-2 → 8px
+                                      paddingRight: 8,
+                                      paddingTop: 4,                    // py-1 → 4px
+                                      paddingBottom: 4,
+                                      borderRadius: 4,                  // rounded
+                                      fontSize: "0.75rem",              // text-xs
+                                      fontWeight: 500,                  // font-medium
+
+                                      // colores condicionados por reserva.estado
+                                      backgroundColor:
+                                        reserva.estado === "activa"
+                                          ? "#d1fae5" // bg-green-100
+                                          : reserva.estado === "cancelada"
+                                          ? "#fee2e2" // bg-red-100
+                                          : "#f3f4f6", // bg-gray-100
+
+                                      color:
+                                        reserva.estado === "activa"
+                                          ? "#065f46" // text-green-800
+                                          : reserva.estado === "cancelada"
+                                          ? "#991b1b" // text-red-800
+                                          : "#1f2937" // text-gray-800
+                                    }}
+                                    >
                                 {reserva.estado}
                               </span>
                             </div>
                             {reserva.estado === "activa" && (
                               <button
                                 onClick={() => cancelarReserva(reserva.id_reserva)}
-                                className="px-3 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm flex items-center gap-2"
+                                style={{
+                                  paddingLeft: 12,        // px-3 → 12px
+                                  paddingRight: 12,
+                                  paddingTop: 8,          // py-2 → 8px
+                                  paddingBottom: 8,
+                                  backgroundColor: hover ? "#b91c1c" : "#dc2626", // red-700 / red-600
+                                  color: "white",         // text-white
+                                  borderRadius: 8,        // rounded-lg
+                                  fontSize: "0.875rem",   // text-sm
+                                  display: "flex",        // flex
+                                  alignItems: "center",   // items-center
+                                  gap: 8,                 // gap-2 → 8px
+                                  cursor: "pointer",
+                                  transition: "background-color 0.2s ease" // hover:bg-red-700
+                                }}
                               >
-                                <X className="w-4 h-4" />
+                                <X style={{
+                                    width: 16,
+                                    height: 16,
+                                  }}
+                                  />
                                 Cancelar
                               </button>
                             )}
@@ -537,145 +1103,270 @@ function Home({ user, onLogout }) {
 
             {/* RESERVAR */}
             {activeView === "reservar" && (
-              <div className="space-y-6">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                  <h2 className="text-xl font-bold text-gray-900 mb-6">Nueva Reserva</h2>
-                  
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Fecha
-                      </label>
-                      <input
-                        type="date"
-                        value={fechaReserva}
-                        onChange={(e) => setFechaReserva(e.target.value)}
-                        min={new Date().toISOString().split('T')[0]}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                    </div>
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
 
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Turno
-                      </label>
-                      <select
-                        value={turnoSeleccionado}
-                        onChange={(e) => setTurnoSeleccionado(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      >
-                        <option value="">Seleccione un turno</option>
-                        {turnos.map((turno) => (
-                          <option key={turno.id_turno} value={turno.id_turno}>
-                            {turno.hora_inicio} - {turno.hora_fin}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
+            {/* Card Nueva Reserva */}
+            <div style={{
+              backgroundColor: "#ffffff",
+              borderRadius: 8,
+              boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+              border: "1px solid #E5E7EB",
+              padding: 24
+            }}>
 
-                  {/* Salas por Tipo */}
-                  <div className="space-y-6">
-                    {/* Salas Libres */}
-                    <div>
-                      <h3 className="text-lg font-semibold text-gray-900 mb-3">Salas Libres (Acceso General)</h3>
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {getSalasPorTipo("libre").map((sala) => (
-                          <button
-                            key={`${sala.nombre_sala}-${sala.edificio}`}
-                            onClick={() => setSalaSeleccionada(sala)}
-                            disabled={!puedeReservarSala(sala)}
-                            className={`p-4 border-2 rounded-lg text-left transition-all ${
-                              salaSeleccionada?.nombre_sala === sala.nombre_sala &&
-                              salaSeleccionada?.edificio === sala.edificio
-                                ? "border-green-600 bg-green-50"
-                                : "border-gray-200 hover:border-green-300"
-                            } ${!puedeReservarSala(sala) ? "opacity-50 cursor-not-allowed" : ""}`}
-                          >
-                            <h4 className="font-semibold text-gray-900">{sala.nombre_sala}</h4>
-                            <p className="text-sm text-gray-600 mt-1">{sala.edificio}</p>
-                            <p className="text-xs text-gray-500 mt-2">
-                              Capacidad: {sala.capacidad} personas
-                            </p>
-                            {!puedeReservarSala(sala) && (
-                              <p className="text-xs text-red-600 mt-2">Solo para docentes</p>
-                            )}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
+              {/* Título */}
+              <h2 style={{
+                fontSize: "1.25rem",
+                fontWeight: 700,
+                color: "#111827",
+                marginBottom: 24
+              }}>
+                Nueva Reserva
+              </h2>
 
-                  {/* Botón Confirmar */}
-                  <div className="mt-8 flex items-center justify-end gap-4">
-                    <button
-                      onClick={() => {
-                        setFechaReserva("");
-                        setTurnoSeleccionado("");
-                        setSalaSeleccionada(null);
-                      }}
-                      className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                    >
-                      Limpiar
-                    </button>
-                    <button
-                      onClick={crearReserva}
-                      disabled={!fechaReserva || !turnoSeleccionado || !salaSeleccionada}
-                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                    >
-                      <Check className="w-4 h-4" />
-                      Confirmar Reserva
-                    </button>
-                  </div>
-
-                  {/* Información de Sala Seleccionada */}
-                  {salaSeleccionada && (
-                    <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-semibold text-blue-900 mb-2">Resumen de Reserva</h4>
-                      <div className="space-y-1 text-sm text-blue-800">
-                        <p><strong>Sala:</strong> {salaSeleccionada.nombre_sala}</p>
-                        <p><strong>Edificio:</strong> {salaSeleccionada.edificio}</p>
-                        <p><strong>Capacidad:</strong> {salaSeleccionada.capacidad} personas</p>
-                        <p><strong>Tipo:</strong> {salaSeleccionada.tipo_sala}</p>
-                        {fechaReserva && <p><strong>Fecha:</strong> {fechaReserva}</p>}
-                        {turnoSeleccionado && (
-                          <p><strong>Horario:</strong> {turnos.find(t => t.id_turno == turnoSeleccionado)?.hora_inicio} - {turnos.find(t => t.id_turno == turnoSeleccionado)?.hora_fin}</p>
-                        )}
-                      </div>
-                    </div>
-                  )}
+              {/* Grid Fecha y Turno */}
+              <div style={{
+                display: "grid",
+                gridTemplateColumns: "1fr",
+                gap: 16,
+                marginBottom: 24
+              }}>
+                {/* Fecha */}
+                <div>
+                  <label style={{
+                    display: "block",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "#374151",
+                    marginBottom: 8
+                  }}>
+                    Fecha
+                  </label>
+                  <input
+                    type="date"
+                    value={fechaReserva}
+                    onChange={(e) => setFechaReserva(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    style={{
+                      width: "100%",
+                      padding: "8px 16px",
+                      border: "1px solid #D1D5DB",
+                      borderRadius: 8,
+                      outline: "none"
+                    }}
+                  />
                 </div>
 
-                {/* Reglas de Reserva */}
-                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                  <h3 className="text-lg font-semibold text-yellow-900 mb-3 flex items-center gap-2">
-                    <AlertCircle className="w-5 h-5" />
-                    Reglas de Reserva
-                  </h3>
-                  <ul className="space-y-2 text-sm text-yellow-800">
-                    <li className="flex items-start gap-2">
-                      <span className="text-yellow-600">•</span>
-                      <span>Máximo 2 horas por día</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-yellow-600">•</span>
-                      <span>Máximo 3 reservas por semana</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-yellow-600">•</span>
-                      <span>Las salas de posgrado requieren estar inscrito en un programa de posgrado</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-yellow-600">•</span>
-                      <span>Las salas de docentes son exclusivas para profesores</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <span className="text-yellow-600">•</span>
-                      <span>No puedes reservar si tienes sanciones activas</span>
-                    </li>
-                  </ul>
+                {/* Turno */}
+                <div>
+                  <label style={{
+                    display: "block",
+                    fontSize: "0.875rem",
+                    fontWeight: 500,
+                    color: "#374151",
+                    marginBottom: 8
+                  }}>
+                    Turno
+                  </label>
+                  <select
+                    value={turnoSeleccionado}
+                    onChange={(e) => setTurnoSeleccionado(e.target.value)}
+                    style={{
+                      width: "100%",
+                      padding: "8px 16px",
+                      border: "1px solid #D1D5DB",
+                      borderRadius: 8,
+                      outline: "none"
+                    }}
+                  >
+                    <option value="">Seleccione un turno</option>
+                    {turnos.map((turno) => (
+                      <option key={turno.id_turno} value={turno.id_turno}>
+                        {turno.hora_inicio} - {turno.hora_fin}
+                      </option>
+                    ))}
+                  </select>
                 </div>
               </div>
+
+              {/* Salas por Tipo */}
+              <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+                <div>
+                  <h3 style={{
+                    fontSize: "1.125rem",
+                    fontWeight: 600,
+                    color: "#111827",
+                    marginBottom: 12
+                  }}>
+                    Salas Libres (Acceso General)
+                  </h3>
+
+                  {/* Grid Salas */}
+                  <div style={{
+                    display: "grid",
+                    gridTemplateColumns: "1fr",
+                    gap: 16
+                  }}>
+                    {getSalasPorTipo("libre").map((sala) => {
+                      const seleccionada = salaSeleccionada?.nombre_sala === sala.nombre_sala && salaSeleccionada?.edificio === sala.edificio;
+                      const puedeReservar = puedeReservarSala(sala);
+
+                      return (
+                        <button
+                          key={`${sala.nombre_sala}-${sala.edificio}`}
+                          onClick={() => setSalaSeleccionada(sala)}
+                          disabled={!puedeReservar}
+                          style={{
+                            padding: 16,
+                            borderWidth: 2,
+                            borderStyle: "solid",
+                            borderColor: seleccionada ? "#16A34A" : "#E5E7EB",
+                            backgroundColor: seleccionada ? "#ECFDF5" : "#ffffff",
+                            borderRadius: 8,
+                            textAlign: "left",
+                            transition: "all 0.2s",
+                            opacity: puedeReservar ? 1 : 0.5,
+                            cursor: puedeReservar ? "pointer" : "not-allowed",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: 4
+                          }}
+                        >
+                          <h4 style={{ fontWeight: 600, color: "#111827" }}>{sala.nombre_sala}</h4>
+                          <p style={{ fontSize: "0.875rem", color: "#4B5563", marginTop: 4 }}>{sala.edificio}</p>
+                          <p style={{ fontSize: "0.75rem", color: "#6B7280", marginTop: 8 }}>
+                            Capacidad: {sala.capacidad} personas
+                          </p>
+                          {!puedeReservar && (
+                            <p style={{ fontSize: "0.75rem", color: "#DC2626", marginTop: 8 }}>Solo para docentes</p>
+                          )}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              {/* Botones Limpiar y Confirmar */}
+              <div style={{
+                marginTop: 32,
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 16
+              }}>
+                <button
+                  onClick={() => {
+                    setFechaReserva("");
+                    setTurnoSeleccionado("");
+                    setSalaSeleccionada(null);
+                  }}
+                  style={{
+                    padding: "8px 24px",
+                    border: "1px solid #D1D5DB",
+                    color: "#374151",
+                    borderRadius: 8,
+                    cursor: "pointer"
+                  }}
+                >
+                  Limpiar
+                </button>
+
+                <button
+                  onClick={crearReserva}
+                  disabled={!fechaReserva || !turnoSeleccionado || !salaSeleccionada}
+                  style={{
+                    padding: "8px 24px",
+                    backgroundColor: "#2563EB",
+                    color: "#ffffff",
+                    borderRadius: 8,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 8,
+                    cursor: fechaReserva && turnoSeleccionado && salaSeleccionada ? "pointer" : "not-allowed",
+                    opacity: fechaReserva && turnoSeleccionado && salaSeleccionada ? 1 : 0.5
+                  }}
+                >
+                  <Check style={{ width: 16, height: 16 }} />
+                  Confirmar Reserva
+                </button>
+              </div>
+
+              {/* Información Sala Seleccionada */}
+              {salaSeleccionada && (
+                <div style={{
+                  marginTop: 24,
+                  padding: 16,
+                  backgroundColor: "#EFF6FF",
+                  border: "1px solid #BFDBFE",
+                  borderRadius: 8
+                }}>
+                  <h4 style={{ fontWeight: 600, color: "#1E3A8A", marginBottom: 8 }}>Resumen de Reserva</h4>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4, fontSize: "0.875rem", color: "#1E40AF" }}>
+                    <p><strong>Sala:</strong> {salaSeleccionada.nombre_sala}</p>
+                    <p><strong>Edificio:</strong> {salaSeleccionada.edificio}</p>
+                    <p><strong>Capacidad:</strong> {salaSeleccionada.capacidad} personas</p>
+                    <p><strong>Tipo:</strong> {salaSeleccionada.tipo_sala}</p>
+                    {fechaReserva && <p><strong>Fecha:</strong> {fechaReserva}</p>}
+                    {turnoSeleccionado && (
+                      <p>
+                        <strong>Horario:</strong> {turnos.find(t => t.id_turno == turnoSeleccionado)?.hora_inicio} - {turnos.find(t => t.id_turno == turnoSeleccionado)?.hora_fin}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              )}
+
+            </div>
+
+            {/* Reglas de Reserva */}
+            <div style={{
+              backgroundColor: "#FEF3C7",   // bg-yellow-50
+              border: "1px solid #FDE68A",  // border-yellow-200
+              borderRadius: 8,
+              padding: 24
+            }}>
+              <h3 style={{
+                fontSize: "1.125rem",
+                fontWeight: 600,
+                color: "#78350F",
+                marginBottom: 12,
+                display: "flex",
+                alignItems: "center",
+                gap: 8
+              }}>
+                <AlertCircle style={{ width: 20, height: 20 }} />
+                Reglas de Reserva
+              </h3>
+              <ul style={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 8,
+                fontSize: "0.875rem",
+                color: "#78350F"
+              }}>
+                <li style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "#D97706" }}>•</span>
+                  <span>Máximo 2 horas por día</span>
+                </li>
+                <li style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "#D97706" }}>•</span>
+                  <span>Máximo 3 reservas por semana</span>
+                </li>
+                <li style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "#D97706" }}>•</span>
+                  <span>Las salas de posgrado requieren estar inscrito en un programa de posgrado</span>
+                </li>
+                <li style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "#D97706" }}>•</span>
+                  <span>Las salas de docentes son exclusivas para profesores</span>
+                </li>
+                <li style={{ display: "flex", gap: 8 }}>
+                  <span style={{ color: "#D97706" }}>•</span>
+                  <span>No puedes reservar si tienes sanciones activas</span>
+                </li>
+              </ul>
+            </div>
+          </div>
             )}
           </>
         )}
