@@ -58,7 +58,7 @@ function Login({ onLogin, onRegisterClick }) {
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h1>Sistema de reserva de salas (hay que pensar un nombre)</h1>
+        <h1>OneRoom UCU</h1>
         <p className="subtitle">Iniciar sesión</p>
         
         {error && <div className="error-message">{error}</div>}
