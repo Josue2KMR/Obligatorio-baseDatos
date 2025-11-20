@@ -523,7 +523,29 @@ JOIN turno t ON t.id_turno = r.id_turno
                 cursor.execute(query, tuple(params))
                 results = cursor.fetchall()
 
-                return jsonify({"success": True, "data": results, "count": len(results)}), 200
+                # ===============================
+                # AUTO-FINALIZAR RESERVAS PASADAS
+                # ===============================
+                from datetime import date
+
+                hoy = date.today()
+
+                reservas_procesadas = []
+                for r in results:
+                    fecha_reserva = date.fromisoformat(r["fecha"])
+
+                    # Si ya pasó y sigue activa → marcar como finalizada
+                    if fecha_reserva < hoy and r["estado"] == "activa":
+                        r["estado"] = "finalizada"
+
+                    reservas_procesadas.append(r)
+
+                return jsonify({
+                    "success": True,
+                    "data": reservas_procesadas,
+                    "count": len(reservas_procesadas)
+                }), 200
+
 
     except Error as err:
         return jsonify({"success": False, "error": f"Error SQL en get_reservas: {str(err)}"}), 500

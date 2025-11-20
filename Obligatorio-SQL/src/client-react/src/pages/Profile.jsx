@@ -12,6 +12,8 @@ export default function Perfil({ user, onLogout }) {
     loadData();
   }, []);
 
+ 
+
   const loadData = async () => {
     setLoading(true);
     try {
@@ -40,17 +42,17 @@ export default function Perfil({ user, onLogout }) {
   };
 
   const formatearFecha = (fecha) => {
-  if (!fecha) return "Fecha no disponible";
+    if (!fecha) return "Fecha no disponible";
 
-  const date = new Date(`${fecha}T00:00:00`);
+    const date = new Date(`${fecha}T00:00:00`);
 
-  return date.toLocaleDateString("es-UY", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-};
+    return date.toLocaleDateString("es-UY", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  };
 
 
   const cancelarReserva = async (idReserva) => {
@@ -105,6 +107,24 @@ export default function Perfil({ user, onLogout }) {
   }
 
   if (!participante) return <div>Error al cargar perfil</div>;
+
+  // Ordenar reservas por fecha ascendente
+  const reservasOrdenadas = [...misReservas].sort(
+    (a, b) => a.fecha.localeCompare(b.fecha)
+  );
+
+
+  // Filtrar categorías
+  const activas = reservasOrdenadas.filter(r => r.estado === "activa");
+
+  const utilizadas = reservasOrdenadas.filter(
+    r => ["finalizada", "sin asistencia"].includes(r.estado)
+  );
+
+ 
+
+
+
 
   return (
     <div className="space-y-6">
@@ -214,54 +234,91 @@ export default function Perfil({ user, onLogout }) {
         </div>
       )}
 
-      {/* Mis Reservas */}
+      {/* ======================================= */}
+      {/*            MIS RESERVAS                */}
+      {/* ======================================= */}
+
       <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">📋 Mis Reservas</h2>
-        {misReservas.length === 0 ? (
-          <p className="text-gray-600">No tienes reservas</p>
-        ) : (
-          <div className="space-y-3">
-            {misReservas.map((reserva) => (
-              <div
-                key={reserva.id_reserva}
-                className={`p-4 border rounded-lg ${
-                  reserva.estado === "activa" 
-                    ? "border-green-300 bg-green-50" 
-                    : "border-gray-200 bg-gray-50"
-                }`}
+
+        <h2 className="text-2xl font-bold text-gray-900 mb-6">📋 Mis Reservas</h2>
+
+        
+        
+
+        {/* ============ ACTIVAS ============ */}
+        <div className="mb-8">
+          <h3 className="text-xl font-semibold text-green-700 mb-3">
+            🟢 Activas ({activas.length})
+          </h3>
+
+          {activas.length === 0 ? (
+            <p className="text-gray-600">No tienes reservas activas.</p>
+          ) : (
+            <div className="grid grid-cols-4 gap-4 font-semibold text-gray-700 border-b pb-2">
+              <p>Sala</p>
+              <p>Fecha</p>
+              <p>Turno</p>
+              <p className="text-center">Acción</p>
+            </div>
+          )}
+
+          {activas.map((r) => (
+            <div
+              key={r.id_reserva}
+              className="grid grid-cols-4 gap-4 py-3 border-b items-center"
+            >
+              <p className="font-medium">{r.nombre_sala} - {r.edificio}</p>
+              <p>{formatearFecha(r.fecha)}</p>
+              <p>{r.hora_inicio} - {r.hora_fin}</p>
+
+              <button
+                onClick={() => cancelarReserva(r.id_reserva)}
+                className="mx-auto px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 text-sm"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-2">
-                      🏛️ {reserva.nombre_sala} - {reserva.edificio}
-                    </h3>
-                    <div className="space-y-1 text-sm text-gray-700">
-                      <p>📅 {formatearFecha(reserva.fecha)}</p>
-                      <p>⏰ {reserva.hora_inicio} - {reserva.hora_fin}</p>
-                    </div>
-                    <span className={`inline-block mt-3 px-3 py-1 rounded text-xs font-medium ${
-                      reserva.estado === "activa" ? "bg-green-200 text-green-900" :
-                      reserva.estado === "cancelada" ? "bg-red-200 text-red-900" :
-                      reserva.estado === "finalizada" ? "bg-blue-200 text-blue-900" :
-                      "bg-gray-200 text-gray-900"
-                    }`}>
-                      {reserva.estado.toUpperCase()}
-                    </span>
-                  </div>
-                  {reserva.estado === "activa" && (
-                    <button
-                      onClick={() => cancelarReserva(reserva.id_reserva)}
-                      className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors"
-                    >
-                      ❌ Cancelar
-                    </button>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+                Cancelar
+              </button>
+            </div>
+          ))}
+        </div>
+
+        {/* ============ UTILIZADAS ============ */}
+        <div>
+          <h3 className="text-xl font-semibold text-blue-700 mb-3">
+            🔵 Utilizadas ({utilizadas.length})
+          </h3>
+
+          {utilizadas.length === 0 ? (
+            <p className="text-gray-600">No tienes reservas utilizadas.</p>
+          ) : (
+            <div className="grid grid-cols-4 gap-4 font-semibold text-gray-700 border-b pb-2">
+              <p>Sala</p>
+              <p>Fecha</p>
+              <p>Turno</p>
+              <p className="text-center">Estado</p>
+            </div>
+          )}
+
+          {utilizadas.map((r) => (
+            <div
+              key={r.id_reserva}
+              className="grid grid-cols-4 gap-4 py-3 border-b items-center"
+            >
+              <p className="font-medium">{r.nombre_sala} - {r.edificio}</p>
+              <p>{formatearFecha(r.fecha)}</p>
+              <p>{r.hora_inicio} - {r.hora_fin}</p>
+
+              <span className="mx-auto text-sm font-medium">
+                {r.estado === "sin asistencia"
+                  ? "SIN ASISTENCIA"
+                  : "FINALIZADA"}
+
+              </span>
+            </div>
+          ))}
+        </div>
+
+</div>
+
     </div>
   );
 }

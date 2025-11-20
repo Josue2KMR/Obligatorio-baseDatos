@@ -90,4 +90,3 @@ CREATE TABLE sancion_participante (
     fecha_fin DATE NOT NULL,
     FOREIGN KEY (ci_participante) REFERENCES participante(ci)
 );
-
