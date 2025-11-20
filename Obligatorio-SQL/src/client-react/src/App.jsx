@@ -77,7 +77,7 @@ function App() {
 
   // Vista principal (dashboard con navegación)
   return (
-    <div className="app-container">
+    <div className="page-container">
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-header">

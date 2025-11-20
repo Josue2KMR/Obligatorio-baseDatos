@@ -1,4 +1,3 @@
-
 USE obligatorio;
 
 -- INSERTAR TURNOS
@@ -64,7 +63,8 @@ INSERT INTO participante(ci, nombre, apellido, email) VALUES
 (47654321, 'Camila', 'Santos', 'camila.santos@correo.ucu.uy'),
 (48976540, 'Martín', 'González', 'martin.gonzalez@correo.ucu.uy'),
 (52789452, 'Valentina', 'Suárez', 'valentina.suarez@correo.ucu.uy'),
-(50123498, 'Sofía', 'Torres', 'sofia.torres@correo.ucu.uy');
+(50123498, 'Sofía', 'Torres', 'sofia.torres@correo.ucu.uy'),
+(11111111, 'Admin', 'Sistema', 'admin@correo.ucu.uy');
 
 INSERT INTO
     login (correo, contraseña)
@@ -78,7 +78,8 @@ VALUES
     ('camila.santos@correo.ucu.uy', 'pass123'),
     ('martin.gonzalez@correo.ucu.uy', 'pass123'),
     ('valentina.suarez@correo.ucu.uy', 'pass123'),
-    ('sofia.torres@correo.ucu.uy', 'pass123');
+    ('sofia.torres@correo.ucu.uy', 'pass123'),
+    ('admin@correo.ucu.uy', 'admin123');
 
 
 -- Asignar roles a los participantes existentes
@@ -121,6 +122,9 @@ INSERT INTO participante_programa_academico (ci_participante, nombre_programa, i
 -- Participante 10: Estudiante de grado (Contador Público)
 INSERT INTO participante_programa_academico (ci_participante, nombre_programa, id_facultad, rol) VALUES
 (50123498, 'Contador Público', 1, 'estudiante');
+
+INSERT INTO participante_programa_academico (ci_participante, nombre_programa, id_facultad, rol)
+VALUES (11111111, 'Ingeniería en Sistemas', 3, 'admin');
 
 -- Verificar que los roles se insertaron correctamente
 SELECT
