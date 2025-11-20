@@ -39,78 +39,78 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="mt-4 text-gray-600">Cargando estadísticas...</p>
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p className="loading-text">Cargando estadísticas...</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="content-wrapper">
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Salas Totales</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{salas.length}</p>
+      <div className="stats-container">
+        <div className="stat-card">
+          <div className="stat-content">
+            <div className="stat-info">
+              <p className="stat-label">Salas Totales</p>
+              <p className="stat-value">{salas.length}</p>
             </div>
-            <span className="text-4xl">🏛️</span>
+            <span className="stat-icon">🏛️</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Turnos</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{turnos.length}</p>
+        <div className="stat-card">
+          <div className="stat-content">
+            <div className="stat-info">
+              <p className="stat-label">Turnos</p>
+              <p className="stat-value">{turnos.length}</p>
             </div>
-            <span className="text-4xl">⏰</span>
+            <span className="stat-icon">⏰</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Reservas Hoy</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{reservasHoy.length}</p>
+        <div className="stat-card">
+          <div className="stat-content">
+            <div className="stat-info">
+              <p className="stat-label">Reservas Hoy</p>
+              <p className="stat-value">{reservasHoy.length}</p>
             </div>
-            <span className="text-4xl">📅</span>
+            <span className="stat-icon">📅</span>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-600">Ocupación</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">
+        <div className="stat-card">
+          <div className="stat-content">
+            <div className="stat-info">
+              <p className="stat-label">Ocupación</p>
+              <p className="stat-value">
                 {((reservasHoy.length / (salas.length * turnos.length)) * 100).toFixed(0)}%
               </p>
             </div>
-            <span className="text-4xl">📊</span>
+            <span className="stat-icon">📊</span>
           </div>
         </div>
       </div>
 
       {/* Salas Más Demandadas */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">🔥 Salas Más Reservadas</h2>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gray-50 border-b border-gray-200">
+      <div className="card">
+        <h2 className="card-title">🔥 Salas Más Reservadas</h2>
+        <div className="table-container">
+          <table className="table">
+            <thead>
               <tr>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Sala</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Edificio</th>
-                <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600 uppercase">Total Reservas</th>
+                <th>Sala</th>
+                <th>Edificio</th>
+                <th>Total Reservas</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody>
               {salasMasDemandadas.slice(0, 5).map((sala, idx) => (
-                <tr key={idx} className="hover:bg-gray-50">
-                  <td className="px-4 py-3 text-sm text-gray-900">{sala.nombre_sala}</td>
-                  <td className="px-4 py-3 text-sm text-gray-600">{sala.edificio}</td>
-                  <td className="px-4 py-3 text-sm text-gray-900 font-medium">{sala.total_reservas}</td>
+                <tr key={idx}>
+                  <td className="font-medium">{sala.nombre_sala}</td>
+                  <td className="text-secondary">{sala.edificio}</td>
+                  <td className="font-medium">{sala.total_reservas}</td>
                 </tr>
               ))}
             </tbody>
@@ -119,9 +119,9 @@ export default function Dashboard() {
       </div>
 
       {/* Estado de Salas */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">📍 Estado de Salas Hoy</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <div className="card">
+        <h2 className="card-title">📍 Estado de Salas Hoy</h2>
+        <div className="rooms-grid">
           {salas.map((sala) => {
             const reservasEnSala = reservasHoy.filter(
               r => r.nombre_sala === sala.nombre_sala && r.edificio === sala.edificio
@@ -131,20 +131,16 @@ export default function Dashboard() {
             return (
               <div
                 key={`${sala.nombre_sala}-${sala.edificio}`}
-                className={`p-4 rounded-lg border-2 ${
-                  ocupada ? "border-red-300 bg-red-50" : "border-green-300 bg-green-50"
-                }`}
+                className={`room-card ${ocupada ? "occupied" : "available"}`}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <h3 className="font-semibold text-gray-900">{sala.nombre_sala}</h3>
-                  <span className={`px-2 py-1 rounded text-xs font-medium ${
-                    ocupada ? "bg-red-200 text-red-800" : "bg-green-200 text-green-800"
-                  }`}>
+                <div className="room-header">
+                  <h3 className="room-name">{sala.nombre_sala}</h3>
+                  <span className={`room-badge ${ocupada ? "occupied" : "available"}`}>
                     {ocupada ? "🔴 Ocupada" : "🟢 Libre"}
                   </span>
                 </div>
-                <p className="text-sm text-gray-600">{sala.edificio}</p>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="room-building">{sala.edificio}</p>
+                <p className="room-details">
                   👥 {sala.capacidad} | 📂 {sala.tipo_sala}
                 </p>
               </div>

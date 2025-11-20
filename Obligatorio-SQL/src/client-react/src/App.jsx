@@ -1,106 +1,145 @@
 import { useState, useEffect } from "react";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
-import Perfil from "./pages/Profile";
 import Dashboard from "./pages/Dashboard";
 import Reservar from "./pages/Reservar";
-import "./App.css";
+import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
+import "./styles.css";
 
 function App() {
-  const [currentPage, setCurrentPage] = useState("login");
-  const [currentView, setCurrentView] = useState("dashboard");
+  const [currentView, setCurrentView] = useState("login");
   const [user, setUser] = useState(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [activeSection, setActiveSection] = useState("dashboard");
 
+  // Verificar si el usuario es admin cuando inicia sesión
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-      setCurrentPage("home");
-    }
-  }, []);
+    const checkAdmin = async () => {
+      if (user?.correo) {
+        try {
+          const res = await fetch(
+            `http://localhost:5000/api/admin/verificar?correo=${user.correo}`
+          );
+          const data = await res.json();
+          
+          if (data.success) {
+            setIsAdmin(data.is_admin);
+            // Si es admin, mostrar el panel de admin por defecto
+            if (data.is_admin) {
+              setActiveSection("admin");
+            }
+          }
+        } catch (err) {
+          console.error("Error verificando admin:", err);
+        }
+      }
+    };
+
+    checkAdmin();
+  }, [user]);
 
   const handleLogin = (userData) => {
     setUser(userData);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setCurrentPage("home");
+    setCurrentView("main");
+    setActiveSection("dashboard");
   };
 
   const handleLogout = () => {
     setUser(null);
-    localStorage.removeItem("user");
-    setCurrentPage("login");
-    setCurrentView("dashboard");
+    setIsAdmin(false);
+    setCurrentView("login");
+    setActiveSection("dashboard");
   };
 
-  // Páginas de autenticación
-  if (currentPage === "login") {
-    return <Login onLogin={handleLogin} onRegisterClick={() => setCurrentPage("register")} />;
-  }
+  const handleRegisterSuccess = () => {
+    setCurrentView("login");
+  };
 
-  if (currentPage === "register") {
+  // Vista de autenticación
+  if (currentView === "login") {
     return (
-      <Register
-        onRegisterSuccess={handleLogin}
-        onBackToLogin={() => setCurrentPage("login")}
+      <Login
+        onLogin={handleLogin}
+        onRegisterClick={() => setCurrentView("register")}
       />
     );
   }
 
-  // Página principal con navegación
-  return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h1 className="text-2xl font-bold text-gray-900">📚 ReservaUCU</h1>
-              <p className="text-sm text-gray-600 mt-1">{user?.correo}</p>
-            </div>
-          </div>
-          
-          <nav className="flex items-center gap-2">
-            <button
-              onClick={() => setCurrentView("dashboard")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                currentView === "dashboard"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              📊 Dashboard
-            </button>
-            
-            <button
-              onClick={() => setCurrentView("reservar")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                currentView === "reservar"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              📝 Reservar
-            </button>
-            
-            <button
-              onClick={() => setCurrentView("perfil")}
-              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
-                currentView === "perfil"
-                  ? "bg-blue-600 text-white"
-                  : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-              }`}
-            >
-              👤 Perfil
-            </button>
-          </nav>
-        </div>
-      </header>
+  if (currentView === "register") {
+    return (
+      <Register
+        onRegisterSuccess={handleRegisterSuccess}
+        onBackToLogin={() => setCurrentView("login")}
+      />
+    );
+  }
 
-      {/* Contenido Principal */}
-      <main className="max-w-7xl mx-auto px-4 py-8">
-        {currentView === "dashboard" && <Dashboard />}
-        {currentView === "reservar" && <Reservar user={user} />}
-        {currentView === "perfil" && <Perfil user={user} onLogout={handleLogout} />}
+  // Vista principal (dashboard con navegación)
+  return (
+    <div className="app-container">
+      {/* Sidebar */}
+      <aside className="sidebar">
+        <div className="sidebar-header">
+          <h1 className="logo">OneRoom UCU</h1>
+          <p className="user-email">{user?.correo}</p>
+          {isAdmin && (
+            <span className="admin-badge">🛡️ Administrador</span>
+          )}
+        </div>
+
+        <nav className="nav-menu">
+          <button
+            className={`nav-item ${activeSection === "dashboard" ? "active" : ""}`}
+            onClick={() => setActiveSection("dashboard")}
+          >
+            <span className="nav-icon">📊</span>
+            Dashboard
+          </button>
+
+          <button
+            className={`nav-item ${activeSection === "reservar" ? "active" : ""}`}
+            onClick={() => setActiveSection("reservar")}
+          >
+            <span className="nav-icon">📅</span>
+            Reservar Sala
+          </button>
+
+          <button
+            className={`nav-item ${activeSection === "perfil" ? "active" : ""}`}
+            onClick={() => setActiveSection("perfil")}
+          >
+            <span className="nav-icon">👤</span>
+            Mi Perfil
+          </button>
+
+          {isAdmin && (
+            <>
+              <div className="nav-divider"></div>
+              <button
+                className={`nav-item admin-item ${activeSection === "admin" ? "active" : ""}`}
+                onClick={() => setActiveSection("admin")}
+              >
+                <span className="nav-icon">🛡️</span>
+                Panel Admin
+              </button>
+            </>
+          )}
+        </nav>
+
+        <div className="sidebar-footer">
+          <button onClick={handleLogout} className="btn-logout">
+            🚪 Cerrar Sesión
+          </button>
+        </div>
+      </aside>
+
+      {/* Main Content */}
+      <main className="main-content">
+        {activeSection === "dashboard" && <Dashboard />}
+        {activeSection === "reservar" && <Reservar user={user} />}
+        {activeSection === "perfil" && <Profile user={user} onLogout={handleLogout} />}
+        {activeSection === "admin" && isAdmin && <Admin user={user} onLogout={handleLogout} />}
       </main>
     </div>
   );

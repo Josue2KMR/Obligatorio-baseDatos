@@ -40,18 +40,15 @@ export default function Perfil({ user, onLogout }) {
   };
 
   const formatearFecha = (fecha) => {
-  if (!fecha) return "Fecha no disponible";
-
-  const date = new Date(`${fecha}T00:00:00`);
-
-  return date.toLocaleDateString("es-UY", {
-    weekday: "long",
-    year: "numeric",
-    month: "long",
-    day: "numeric"
-  });
-};
-
+    if (!fecha) return "Fecha no disponible";
+    const date = new Date(`${fecha}T00:00:00`);
+    return date.toLocaleDateString("es-UY", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric"
+    });
+  };
 
   const cancelarReserva = async (idReserva) => {
     try {
@@ -97,115 +94,106 @@ export default function Perfil({ user, onLogout }) {
 
   if (loading) {
     return (
-      <div className="text-center py-12">
-        <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-        <p className="mt-4 text-gray-600">Cargando perfil...</p>
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p className="loading-text">Cargando perfil...</p>
       </div>
     );
   }
 
-  if (!participante) return <div>Error al cargar perfil</div>;
+  if (!participante) {
+    return (
+      <div className="alert alert-error">
+        Error al cargar el perfil. Por favor, intenta nuevamente.
+      </div>
+    );
+  }
 
   return (
-    <div className="space-y-6">
+    <div className="content-wrapper">
       {message.text && (
-        <div className={`p-4 rounded-lg ${
-          message.type === "success" ? "bg-green-50 border border-green-200 text-green-700" :
-          "bg-red-50 border border-red-200 text-red-700"
-        }`}>
+        <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
           {message.text}
         </div>
       )}
 
       {/* Info Personal */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold text-gray-900">👤 Mi Perfil</h2>
-          <button
-            onClick={onLogout}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
+      <div className="card">
+        <div className="card-header">
+          <h2 className="card-title">👤 Mi Perfil</h2>
+          <button onClick={onLogout} className="btn btn-secondary">
             🚪 Cerrar Sesión
           </button>
         </div>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="text-sm font-medium text-gray-600">CI</label>
-            <p className="text-lg text-gray-900">{participante.ci}</p>
+        <div className="profile-grid">
+          <div className="profile-field">
+            <label>CI</label>
+            <p>{participante.ci}</p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Email</label>
-            <p className="text-lg text-gray-900">{participante.email}</p>
+          <div className="profile-field">
+            <label>Email</label>
+            <p>{participante.email}</p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Nombre</label>
-            <p className="text-lg text-gray-900">{participante.nombre}</p>
+          <div className="profile-field">
+            <label>Nombre</label>
+            <p>{participante.nombre}</p>
           </div>
-          <div>
-            <label className="text-sm font-medium text-gray-600">Apellido</label>
-            <p className="text-lg text-gray-900">{participante.apellido}</p>
+          <div className="profile-field">
+            <label>Apellido</label>
+            <p>{participante.apellido}</p>
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-gray-200">
-          {!showDeleteConfirm ? (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-            >
-              🗑️ Eliminar Cuenta
-            </button>
-          ) : (
-            <div className="bg-red-50 border border-red-200 p-4 rounded-lg">
-              <p className="text-red-800 font-semibold mb-3">⚠️ ¿Estás seguro? Esta acción no se puede deshacer.</p>
-              <div className="flex gap-3">
-                <button
-                  onClick={eliminarCuenta}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
-                >
-                  Sí, eliminar permanentemente
-                </button>
-                <button
-                  onClick={() => setShowDeleteConfirm(false)}
-                  className="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400"
-                >
-                  Cancelar
-                </button>
-              </div>
+        <div className="divider"></div>
+
+        {!showDeleteConfirm ? (
+          <button
+            onClick={() => setShowDeleteConfirm(true)}
+            className="btn btn-danger"
+          >
+            🗑️ Eliminar Cuenta
+          </button>
+        ) : (
+          <div className="delete-confirm">
+            <p className="delete-confirm-text">
+              ⚠️ ¿Estás seguro? Esta acción no se puede deshacer.
+            </p>
+            <div className="delete-confirm-actions">
+              <button onClick={eliminarCuenta} className="btn btn-danger">
+                Sí, eliminar permanentemente
+              </button>
+              <button
+                onClick={() => setShowDeleteConfirm(false)}
+                className="btn btn-outline"
+              >
+                Cancelar
+              </button>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Sanciones */}
       {misSanciones.length > 0 && (
-        <div className="bg-red-50 border-2 border-red-300 rounded-lg p-6">
-          <h2 className="text-xl font-bold text-red-900 mb-4">⚠️ Sanciones</h2>
-          <div className="space-y-3">
+        <div className="sanctions-container">
+          <div className="sanctions-header">
+            <span style={{ fontSize: '24px' }}>⚠️</span>
+            <h2 className="sanctions-title">Sanciones</h2>
+          </div>
+          <div className="sanctions-list">
             {misSanciones.map((sancion, idx) => {
               const hoy = new Date().toISOString().split('T')[0];
               const activa = sancion.fecha_inicio <= hoy && sancion.fecha_fin >= hoy;
               
               return (
-                <div 
-                  key={idx} 
-                  className={`p-4 rounded-lg border ${
-                    activa 
-                      ? 'bg-red-100 border-red-300' 
-                      : 'bg-white border-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <span className={`px-2 py-1 rounded text-xs font-medium ${
-                      activa ? 'bg-red-200 text-red-900' : 'bg-gray-200 text-gray-700'
-                    }`}>
-                      {activa ? '🚫 ACTIVA' : '✓ Finalizada'}
-                    </span>
-                  </div>
-                  <p className="text-sm text-gray-700">
-                    📅 Desde: <span className="font-medium">{sancion.fecha_inicio}</span> hasta{" "}
-                    <span className="font-medium">{sancion.fecha_fin}</span>
+                <div key={idx} className="sanction-item">
+                  <span className={`sanction-badge ${activa ? "active" : "finished"}`}>
+                    {activa ? '🚫 ACTIVA' : '✓ Finalizada'}
+                  </span>
+                  <p className="sanction-text">
+                    📅 Desde: <strong>{sancion.fecha_inicio}</strong> hasta{" "}
+                    <strong>{sancion.fecha_fin}</strong>
                   </p>
                 </div>
               );
@@ -215,43 +203,41 @@ export default function Perfil({ user, onLogout }) {
       )}
 
       {/* Mis Reservas */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-4">📋 Mis Reservas</h2>
+      <div className="card">
+        <h2 className="card-title">📋 Mis Reservas</h2>
         {misReservas.length === 0 ? (
-          <p className="text-gray-600">No tienes reservas</p>
+          <div className="empty-state">
+            <div className="empty-state-icon">📭</div>
+            <p className="empty-state-text">No tienes reservas</p>
+          </div>
         ) : (
-          <div className="space-y-3">
+          <div className="reservations-list">
             {misReservas.map((reserva) => (
               <div
                 key={reserva.id_reserva}
-                className={`p-4 border rounded-lg ${
-                  reserva.estado === "activa" 
-                    ? "border-green-300 bg-green-50" 
-                    : "border-gray-200 bg-gray-50"
-                }`}
+                className={`reservation-item ${reserva.estado === "activa" ? "active" : reserva.estado === "cancelada" ? "cancelled" : ""}`}
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <h3 className="font-semibold text-gray-900 mb-2">
+                <div className="reservation-header">
+                  <div className="reservation-info">
+                    <h3 className="reservation-title">
                       🏛️ {reserva.nombre_sala} - {reserva.edificio}
                     </h3>
-                    <div className="space-y-1 text-sm text-gray-700">
+                    <div className="reservation-details">
                       <p>📅 {formatearFecha(reserva.fecha)}</p>
                       <p>⏰ {reserva.hora_inicio} - {reserva.hora_fin}</p>
                     </div>
-                    <span className={`inline-block mt-3 px-3 py-1 rounded text-xs font-medium ${
-                      reserva.estado === "activa" ? "bg-green-200 text-green-900" :
-                      reserva.estado === "cancelada" ? "bg-red-200 text-red-900" :
-                      reserva.estado === "finalizada" ? "bg-blue-200 text-blue-900" :
-                      "bg-gray-200 text-gray-900"
+                    <span className={`reservation-status ${
+                      reserva.estado === "activa" ? "active" :
+                      reserva.estado === "cancelada" ? "cancelled" :
+                      "finished"
                     }`}>
-                      {reserva.estado.toUpperCase()}
+                      {reserva.estado}
                     </span>
                   </div>
                   {reserva.estado === "activa" && (
                     <button
                       onClick={() => cancelarReserva(reserva.id_reserva)}
-                      className="ml-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 text-sm transition-colors"
+                      className="btn btn-danger"
                     >
                       ❌ Cancelar
                     </button>
