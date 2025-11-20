@@ -134,7 +134,7 @@ export default function Reservar({ user }) {
   }
 
   return (
-    <div className="page-container">
+    <div className="reservas-container">
       <div className="content-wrapper">
         <div className="card">
           <h1 className="card-title" style={{ fontSize: '28px', marginBottom: '8px' }}>
