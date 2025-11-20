@@ -10,6 +10,12 @@ export default function Reservar({ user }) {
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
 
+  const hoy = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  })();
+
+
   useEffect(() => {
     loadData();
     const hoy = new Date();
@@ -186,12 +192,14 @@ export default function Reservar({ user }) {
                   required
                   type="date"
                   value={fechaReserva}
-                  min={fechaReserva}
+                  min={hoy}     
                   onChange={(e) => {
                     setFechaReserva(e.target.value);
                     setTurnoSeleccionado("");
                   }}
+                  className="w-full p-2 border rounded"
                 />
+
               </div>
 
               {/* TURNO */}
@@ -201,14 +209,43 @@ export default function Reservar({ user }) {
                   required
                   value={turnoSeleccionado}
                   onChange={(e) => setTurnoSeleccionado(e.target.value)}
+                  className="w-full p-2 border rounded"
                 >
                   <option value="">-- Elige un Turno --</option>
-                  {turnos.map((turno) => (
-                    <option key={turno.id_turno} value={turno.id_turno}>
-                      {turno.hora_inicio} - {turno.hora_fin}
-                    </option>
-                  ))}
+
+                  {turnos.map((turno) => {
+                    // Convertir HH:MM a minutos totales
+                    const [h, m] = turno.hora_inicio.split(":").map(Number);
+                    const turnoMinutos = h * 60 + m;
+
+                    // Obtener fecha/hora actual
+                    const ahora = new Date();
+                    const hoy = ahora.toISOString().split("T")[0];
+
+                    const horaNow = ahora.getHours();
+                    const minNow = ahora.getMinutes();
+                    const nowMinutos = horaNow * 60 + minNow;
+
+                    // ¿Estamos reservando para hoy?
+                    const esHoy = fechaReserva === hoy;
+
+                    // Si es hoy y el turno empezó antes que la hora actual → DESHABILITAR
+                    const disabled = esHoy && turnoMinutos <= nowMinutos;
+
+                    return (
+                      <option
+                        key={turno.id_turno}
+                        value={turno.id_turno}
+                        disabled={disabled}
+                        className={disabled ? "text-gray-400" : ""}
+                      >
+                        {turno.hora_inicio} - {turno.hora_fin}
+                        {disabled ? "  (No disponible)" : ""}
+                      </option>
+                    );
+                  })}
                 </select>
+
               </div>
 
             </div>
