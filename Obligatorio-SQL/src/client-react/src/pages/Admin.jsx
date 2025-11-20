@@ -26,6 +26,8 @@ export default function Admin({ onLogout }) {
     dias: ""
   });
 
+  const [sanciones, setSanciones] = useState([]);
+
   useEffect(() => {
     loadData();
   }, [activeTab]);
@@ -50,6 +52,19 @@ export default function Admin({ onLogout }) {
         const data = await res.json();
         if (data.success) setUsuarios(data.data);
       }
+
+      if (activeTab === "sanciones") {
+        const [usuariosRes, sancionesRes] = await Promise.all([
+          fetch("http://localhost:5000/api/admin/usuarios"),
+          fetch("http://localhost:5000/api/admin/sanciones")
+        ]);
+        const usuariosData = await usuariosRes.json();
+        const sancionesData = await sancionesRes.json();
+        
+        if (usuariosData.success) setUsuarios(usuariosData.data);
+        if (sancionesData.success) setSanciones(sancionesData.data);
+      }
+
     } catch (err) {
       console.error("Error:", err);
       showMessage("error", "Error al cargar datos");
@@ -182,6 +197,31 @@ export default function Admin({ onLogout }) {
     } catch (err) {
       console.error(err);
       showMessage("error", "Error al crear sanción");
+    }
+  };
+
+  const handleEliminarSancion = async (idSancion, nombreUsuario) => {
+    if (!confirm(`¿Eliminar sanción de ${nombreUsuario}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/admin/sancion/${idSancion}`,
+        { method: "DELETE" }
+      );
+      
+      const data = await res.json();
+      
+      if (data.success) {
+        showMessage("success", "✅ Sanción eliminada");
+        loadData();
+      } else {
+        showMessage("error", `❌ ${data.error}`);
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage("error", "Error al eliminar sanción");
     }
   };
 
@@ -509,9 +549,79 @@ export default function Admin({ onLogout }) {
             </button>
           </form>
 
+         <div className="divider"></div>
+
+          {/* Tabla de Sanciones Activas */}
+          <div>
+            <h3 className="card-title" style={{ fontSize: '20px', marginBottom: '16px' }}>
+              🚫 Sanciones Activas
+            </h3>
+
+            {sanciones.length === 0 ? (
+              <div className="empty-state">
+                <p className="empty-state-text">No hay sanciones activas en el sistema</p>
+              </div>
+            ) : (
+              <div className="table-container">
+                <table className="table">
+                  <thead>
+                    <tr>
+                      <th>Usuario</th>
+                      <th>Email</th>
+                      <th>Fecha Inicio</th> 
+                      <th>Fecha Fin</th>
+                      <th>Estado</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sanciones.map((sancion) => {
+                        const hoy = new Date();
+                        hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+                        
+                        const fechaInicio = new Date(sancion.fecha_inicio);
+                        const fechaFin = new Date(sancion.fecha_fin);
+                        
+                        const activa = fechaInicio <= hoy && fechaFin >= hoy;
+                      
+                      return (
+                        <tr key={sancion.id_sancion}>
+                          <td className="font-medium">
+                            {sancion.nombre} {sancion.apellido}
+                            <br />
+                            <span className="text-secondary" style={{ fontSize: '12px' }}>
+                              CI: {sancion.ci_participante}
+                            </span>
+                          </td>
+                          <td className="text-secondary">{sancion.email}</td>
+                          <td>{sancion.fecha_inicio}</td>
+                          <td>{sancion.fecha_fin}</td>
+                          <td>
+                            <span className={`badge ${activa ? 'badge-danger' : 'badge-secondary'}`}>
+                              {activa ? '🚫 ACTIVA' : '✓ Finalizada'}
+                            </span>
+                          </td>
+                          <td>
+                            <button
+                              onClick={() => handleEliminarSancion(sancion.id_sancion, `${sancion.nombre} ${sancion.apellido}`)}
+                              className="btn btn-danger btn-sm"
+                            >
+                              🗑️ Quitar Sanción
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+
           <div className="divider"></div>
 
           <div className="info-box">
+
             <h3 style={{ fontSize: '18px', marginBottom: '12px' }}>ℹ️ Información sobre Sanciones</h3>
             <ul style={{ marginLeft: '20px', lineHeight: '1.8' }}>
               <li>Las sanciones impiden al usuario realizar nuevas reservas</li>

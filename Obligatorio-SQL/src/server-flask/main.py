@@ -795,24 +795,33 @@ def marcar_sin_asistencia(id_reserva):
 
 @app.route('/api/sanciones')
 def get_sanciones():
-    """Lista todas las sanciones"""
+    """Lista todas las sanciones con datos del participante"""
     try:
         ci = request.args.get('ci_participante')
         activas = request.args.get('activas')
         
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
-                query = "SELECT * FROM sancion_participante WHERE 1=1"
+                query = """
+                SELECT 
+                    s.*,
+                    p.nombre,
+                    p.apellido,
+                    p.email
+                FROM sancion_participante s
+                INNER JOIN participante p ON s.ci_participante = p.ci
+                WHERE 1=1
+                """
                 params = []
                 
                 if ci:
-                    query += " AND ci_participante = %s"
+                    query += " AND s.ci_participante = %s"
                     params.append(ci)
                 
                 if activas == 'true':
-                    query += " AND CURDATE() BETWEEN fecha_inicio AND fecha_fin"
+                    query += " AND CURDATE() BETWEEN s.fecha_inicio AND s.fecha_fin"
                 
-                query += " ORDER BY fecha_inicio DESC"
+                query += " ORDER BY s.fecha_inicio DESC"
                 
                 cursor.execute(query, tuple(params))
                 results = cursor.fetchall()
@@ -849,6 +858,62 @@ def create_sancion():
 def delete_sancion(ci, fecha_inicio):
     """Elimina una sanción"""
     try:
+        with get_db_connection() as cnx:
+            with cnx.cursor() as cursor:
+                query = "DELETE FROM sancion_participante WHERE ci_participante = %s AND fecha_inicio = %s"
+                cursor.execute(query, (ci, fecha_inicio))
+                cnx.commit()
+                
+                if cursor.rowcount > 0:
+                    return jsonify({"success": True, "message": "Sanción eliminada"}), 200
+                else:
+                    return jsonify({"success": False, "error": "Sanción no encontrada"}), 404
+    except Error as err:
+        return jsonify({"success": False, "error": str(err)}), 500
+    
+@app.route('/api/admin/sanciones')
+def get_admin_sanciones():
+    """Lista todas las sanciones para el panel de admin"""
+    try:
+        with get_db_connection() as cnx:
+            with cnx.cursor(dictionary=True) as cursor:
+                query = """
+                SELECT 
+                    s.ci_participante,
+                    s.fecha_inicio,
+                    s.fecha_fin,
+                    p.nombre,
+                    p.apellido,
+                    p.email
+                FROM sancion_participante s
+                INNER JOIN participante p ON s.ci_participante = p.ci
+                ORDER BY s.fecha_inicio DESC
+                """
+                
+                cursor.execute(query)
+                results = cursor.fetchall()
+                
+                # Agregar un ID único para cada sanción
+                for row in results:
+                    row['id_sancion'] = f"{row['ci_participante']}_{row['fecha_inicio']}"
+                
+                return jsonify({"success": True, "data": results}), 200
+    except Error as err:
+        return jsonify({"success": False, "error": str(err)}), 500
+
+
+@app.route('/api/admin/sancion/<id_sancion>', methods=['DELETE'])
+def delete_admin_sancion(id_sancion):
+    """Elimina una sanción usando el ID compuesto"""
+    try:
+        # Separar el ID compuesto
+        parts = id_sancion.split('_')
+        if len(parts) < 2:
+            return jsonify({"success": False, "error": "ID de sanción inválido"}), 400
+        
+        ci = parts[0]
+        fecha_inicio = '_'.join(parts[1:])
+        
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "DELETE FROM sancion_participante WHERE ci_participante = %s AND fecha_inicio = %s"

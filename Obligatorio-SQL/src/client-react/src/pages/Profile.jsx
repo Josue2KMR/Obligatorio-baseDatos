@@ -52,6 +52,25 @@ export default function Perfil({ user, onLogout }) {
     });
   };
 
+  const estaEnUso = (fecha, horaInicio, horaFin) => {
+    const ahora = new Date();
+    const fechaReserva = new Date(`${fecha}T00:00:00`);
+    
+    // Verificar si es el mismo día
+    if (fechaReserva.toDateString() !== ahora.toDateString()) {
+      return false;
+    }
+    
+    // Comparar horas
+    const [horaInicioH, horaInicioM] = horaInicio.split(':').map(Number);
+    const [horaFinH, horaFinM] = horaFin.split(':').map(Number);
+    
+    const minutosInicio = horaInicioH * 60 + horaInicioM;
+    const minutosFin = horaFinH * 60 + horaFinM;
+    const minutosActuales = ahora.getHours() * 60 + ahora.getMinutes();
+    
+    return minutosActuales >= minutosInicio && minutosActuales < minutosFin;
+  };
 
   const cancelarReserva = async (idReserva) => {
     try {
@@ -112,17 +131,23 @@ export default function Perfil({ user, onLogout }) {
     );
   }
 
-  // Clasificar reservas en activas y utilizadas
+// Clasificar reservas en activas, utilizadas y canceladas
   const hoy = new Date().toISOString().split("T")[0];
 
   const activas = misReservas.filter((r) => {
-    // Si la fecha es hoy o posterior y no está marcada como finalizada, se considera activa
-    return (r.fecha >= hoy) && (r.estado !== "finalizada");
+    return (r.fecha >= hoy) && (r.estado !== "finalizada") && (r.estado !== "cancelada") && !estaEnUso(r.fecha, r.hora_inicio, r.hora_fin);
+  });
+
+  const enUso = misReservas.filter((r) => {
+    return (r.estado !== "finalizada") && (r.estado !== "cancelada") && estaEnUso(r.fecha, r.hora_inicio, r.hora_fin);
   });
 
   const utilizadas = misReservas.filter((r) => {
-    // Reservas con fecha pasada o marcadas como finalizadas / sin asistencia se consideran utilizadas
-    return (r.fecha < hoy) || (r.estado === "finalizada") || (r.estado === "sin asistencia");
+    return ((r.fecha < hoy) || (r.estado === "finalizada") || (r.estado === "sin asistencia")) && (r.estado !== "cancelada");
+  });
+
+  const canceladas = misReservas.filter((r) => {
+    return r.estado === "cancelada";
   });
 
   return (
@@ -225,6 +250,55 @@ export default function Perfil({ user, onLogout }) {
       <div className="card">
         <h2 className="card-title">📋 Mis Reservas</h2>
 
+        {/* EN USO */}
+        <div className="mb-6">
+          <h3 className="card-title" style={{ fontSize: '18px', color: '#f59e0b' }}>
+            🟡 En Uso Ahora ({enUso.length})
+          </h3>
+
+          {enUso.length === 0 ? (
+            <div className="empty-state">
+              <p className="empty-state-text">No tienes reservas en uso en este momento.</p>
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Sala</th>
+                    <th>Fecha</th>
+                    <th>Turno</th>
+                    <th className="text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {enUso.map((r) => (
+                    <tr key={r.id_reserva} style={{ backgroundColor: '#FEF3C7' }}>
+                      <td className="font-medium">{r.nombre_sala} - {r.edificio}</td>
+                      <td>{formatearFecha(r.fecha)}</td>
+                      <td>{r.hora_inicio} - {r.hora_fin}</td>
+                      <td className="text-center">
+                        <span 
+                          className="reservation-status"
+                          style={{
+                            backgroundColor: '#FCD34D',
+                            color: '#92400E',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          ⏱️ EN USO
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        <div className="divider"></div>
+
         {/* ACTIVAS */}
         <div className="mb-6">
           <h3 className="card-title" style={{ fontSize: '18px', color: '#059669' }}>
@@ -307,6 +381,53 @@ export default function Perfil({ user, onLogout }) {
                           }}
                         >
                           {r.estado === "sin asistencia" ? "SIN ASISTENCIA" : "FINALIZADA"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+        <div className="divider"></div>
+
+        {/* CANCELADAS */}
+        <div>
+          <h3 className="card-title" style={{ fontSize: '18px', color: '#dc2626' }}>
+            🔴 Canceladas ({canceladas.length})
+          </h3>
+
+          {canceladas.length === 0 ? (
+            <div className="empty-state">
+              <p className="empty-state-text">No tienes reservas canceladas.</p>
+            </div>
+          ) : (
+            <div className="table-container">
+              <table className="table">
+                <thead>
+                  <tr>
+                    <th>Sala</th>
+                    <th>Fecha</th>
+                    <th>Turno</th>
+                    <th className="text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {canceladas.map((r) => (
+                    <tr key={r.id_reserva}>
+                      <td className="font-medium">{r.nombre_sala} - {r.edificio}</td>
+                      <td>{formatearFecha(r.fecha)}</td>
+                      <td>{r.hora_inicio} - {r.hora_fin}</td>
+                      <td className="text-center">
+                        <span 
+                          className="reservation-status"
+                          style={{
+                            backgroundColor: '#FECACA',
+                            color: '#991B1B'
+                          }}
+                        >
+                          CANCELADA
                         </span>
                       </td>
                     </tr>

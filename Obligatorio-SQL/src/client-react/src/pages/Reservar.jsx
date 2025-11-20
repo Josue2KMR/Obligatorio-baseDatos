@@ -145,12 +145,6 @@ export default function Reservar({ user }) {
           </p>
         </div>
 
-        {message.text && (
-          <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
-            {message.text}
-          </div>
-        )}
-
         <form onSubmit={handleReserva} className="card">
           <div className="reservation-form">
             <div className="form-grid">
@@ -274,6 +268,12 @@ export default function Reservar({ user }) {
               </div>
             )}
 
+         {message.text && (
+          <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
+            {message.text}
+          </div>
+        )}
+
             {/* BOTONES */}
             <div className="divider"></div>
             <div className="flex justify-between gap-4">
@@ -286,7 +286,7 @@ export default function Reservar({ user }) {
               </button>
               <button
                 type="submit"
-                className="btn btn-primary btn-lg"
+                className="btn btn-primary "
                 disabled={!salaSeleccionada || !fechaReserva || !turnoSeleccionado}
               >
                 ✅ Confirmar Reserva
