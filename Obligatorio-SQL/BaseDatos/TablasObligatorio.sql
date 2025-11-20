@@ -71,8 +71,7 @@ CREATE TABLE reserva(
     estado VARCHAR(100) NOT NULL,
     FOREIGN KEY (nombre_sala) REFERENCES sala(nombre_sala),
     FOREIGN KEY (edificio) REFERENCES edificio(nombre_edificio),
-    FOREIGN KEY (id_turno) REFERENCES turno(id_turno),
-    UNIQUE (nombre_sala, fecha, id_turno)
+    FOREIGN KEY (id_turno) REFERENCES turno(id_turno)
 );
 
 CREATE TABLE reserva_participante(
