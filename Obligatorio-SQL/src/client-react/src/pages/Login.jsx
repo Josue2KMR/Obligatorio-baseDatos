@@ -86,7 +86,7 @@ function Login({ onLogin, onRegisterClick }) {
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
+          <button type="submit" className="btn-primary-login" disabled={loading}>
             {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </button>
         </form>
@@ -96,7 +96,7 @@ function Login({ onLogin, onRegisterClick }) {
           <button 
             type="button" 
             onClick={onRegisterClick} 
-            className="btn-secondary"
+            className="btn-secondary-login"
           >
             Regístrate aquí
           </button>
