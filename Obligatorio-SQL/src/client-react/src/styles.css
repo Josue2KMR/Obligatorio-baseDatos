@@ -402,6 +402,110 @@ body {
   margin-top: 4px;
 }
 
+/* ===== Tabs Container ===== */
+.tabs {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 2px solid #e5e7eb;
+  margin-bottom: 1.5rem;
+  padding-bottom: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Ocultar scrollbar pero mantener funcionalidad */
+.tabs::-webkit-scrollbar {
+  height: 4px;
+}
+
+.tabs::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.tabs::-webkit-scrollbar-thumb {
+  background-color: #d1d5db;
+  border-radius: 2px;
+}
+
+/* ===== Tab Buttons ===== */
+.tab {
+  flex: 1;
+  min-width: max-content;
+  padding: 0.875rem 1.5rem;
+  background-color: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  white-space: nowrap;
+  position: relative;
+}
+
+.tab:hover {
+  color: #374151;
+  background-color: #f9fafb;
+  border-radius: 8px 8px 0 0;
+}
+
+.tab.active {
+  color: #2563eb;
+  font-weight: 600;
+  border-bottom-color: #2563eb;
+  background-color: #eff6ff;
+  border-radius: 8px 8px 0 0;
+}
+
+/* Efecto de enfoque para accesibilidad */
+.tab:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+  border-radius: 8px;
+}
+
+.tab:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Efecto de presionar */
+.tab:active {
+  transform: translateY(1px);
+}
+
+/* ===== Variante con estilo más compacto (opcional) ===== */
+.tabs.compact .tab {
+  padding: 0.625rem 1rem;
+  font-size: 0.875rem;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 768px) {
+  .tabs {
+    gap: 0.25rem;
+    overflow-x: auto;
+    justify-content: flex-start;
+  }
+  
+  .tab {
+    flex: 0 0 auto;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 1rem;
+  }
+  
+  .tab {
+    padding: 0.625rem 0.875rem;
+    font-size: 0.8125rem;
+  }
+}
+
 /* ============================================
    DASHBOARD - STATS CARDS
    ============================================ */
@@ -611,9 +715,81 @@ body {
   margin: 0;
 }
 
+/*============================================
+    Search input panel de admin
+==============================================*/
+
+.search-input {
+  width: 100%;
+  max-width: 400px;
+  padding: 0.75rem 1rem;
+  font-size: 0.95rem;
+  color: #111827;
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 10px;
+  outline: none;
+  transition: all 0.3s ease;
+  font-family: inherit;
+}
+
+/* Placeholder */
+.search-input::placeholder {
+  color: #9ca3af;
+  font-weight: 400;
+}
+
+/* Estado Focus */
+.search-input:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+  background-color: #ffffff;
+}
+
+/* Estado Hover */
+.search-input:hover:not(:focus) {
+  border-color: #d1d5db;
+  background-color: #f9fafb;
+}
+
+/* Cuando tiene contenido */
+.search-input:not(:placeholder-shown) {
+  border-color: #3b82f6;
+  background-color: #eff6ff;
+}
+
+/* Estado Disabled (opcional) */
+.search-input:disabled {
+  background-color: #f3f4f6;
+  color: #9ca3af;
+  cursor: not-allowed;
+  border-color: #e5e7eb;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .search-input {
+    max-width: 100%;
+    padding: 0.625rem 0.875rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8125rem;
+  }
+  
+  .search-input::placeholder {
+    font-size: 0.8125rem;
+  }
+}
+
 /* ============================================
    SANCIONES
    ============================================ */
+
 .sanctions-container {
   background-color: #FEF2F2;
   border: 2px solid #FCA5A5;
@@ -677,6 +853,15 @@ body {
 /* ============================================
    RESERVAS
    ============================================ */
+
+.reservas-container {
+  display: flex;
+  min-height: 100vh;
+  background-color: var(--bg-main);
+  justify-content: center;
+
+}
+
 .reservations-list {
   display: flex;
   flex-direction: column;
