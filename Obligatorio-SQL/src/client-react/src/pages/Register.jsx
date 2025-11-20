@@ -176,14 +176,14 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary">
+          <button type="submit" disabled={loading} className="btn-primary-login">
             {loading ? "Registrando..." : "Crear Cuenta"}
           </button>
         </form>
 
         <div className="auth-footer">
           <p>¿Ya tienes cuenta?</p>
-          <button onClick={onBackToLogin} className="btn-secondary">
+          <button onClick={onBackToLogin} className="btn-secondary-login">
             Inicia sesión aquí
           </button>
         </div>
