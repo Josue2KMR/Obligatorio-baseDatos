@@ -5,6 +5,7 @@ from database import init_db, get_db_connection, test_connection
 from config import Config
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
+import re
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -13,12 +14,21 @@ CORS(app)  # CORS configurado globalmente
 db_initialized = False
 
 
+def validar_correo_ucu(email):
+    """
+    Valida que el correo pertenezca al dominio UCU
+    Dominios permitidos: @correo.ucu.edu.uy, @correo.ucu.uy, @ucu.edu.uy
+    """
+    patron = r'^[a-zA-Z0-9._%+-]+@(correo\.ucu\.edu\.uy|correo\.ucu\.uy)$'
+    return re.match(patron, email) is not None
+
+
 # ==================== LOGIN ====================
 
 @app.route('/api/login', methods=['POST'])
 def login():
     """
-    Autenticación de usuario
+    Autenticación de usuario con contraseñas hasheadas
     """
     try:
         data = request.get_json()
@@ -28,6 +38,13 @@ def login():
         if not correo or not contraseña:
             return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
         
+        # Validar dominio UCU
+        if not validar_correo_ucu(correo):
+            return jsonify({
+                "success": False, 
+                "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
+            }), 400
+        
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 query = "SELECT correo, contraseña FROM login WHERE correo = %s"
@@ -35,8 +52,8 @@ def login():
                 result = cursor.fetchone()
                 
                 if result:
-                    # TODO: Implementar check_password_hash cuando se migre a contraseñas hasheadas
-                    if result['contraseña'] == contraseña:
+                    # Verificar contraseña hasheada
+                    if check_password_hash(result['contraseña'], contraseña):
                         return jsonify({"success": True, "data": {"correo": result['correo']}}), 200
                 
                 return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
@@ -48,7 +65,7 @@ def login():
 @app.route('/api/login/register', methods=['POST'])
 def register_login():
     """
-    Registro de credenciales
+    Registro de credenciales con contraseñas hasheadas
     """
     try:
         data = request.get_json()
@@ -58,14 +75,25 @@ def register_login():
         if not correo or not contraseña:
             return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
 
-        # TODO: Implementar generate_password_hash para seguridad
-        # contraseña_hash = generate_password_hash(contraseña)
+        # Validar dominio UCU
+        if not validar_correo_ucu(correo):
+            return jsonify({
+                "success": False, 
+                "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
+            }), 400
+
+        # Validar longitud mínima
+        if len(contraseña) < 6:
+            return jsonify({"success": False, "error": "La contraseña debe tener al menos 6 caracteres"}), 400
+
+        # Hashear contraseña
+        contraseña_hash = generate_password_hash(contraseña, method='pbkdf2:sha256')
 
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "INSERT INTO login (correo, contraseña) VALUES (%s, %s)"
                 try:
-                    cursor.execute(query, (correo, contraseña))
+                    cursor.execute(query, (correo, contraseña_hash))
                     cnx.commit()
                     return jsonify({"success": True, "message": "Credenciales creadas"}), 201
                 except Error as err:
@@ -136,6 +164,13 @@ def create_participante():
         if not all(key in data for key in ['ci', 'nombre', 'apellido', 'email']):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
         
+        # Validar dominio UCU
+        if not validar_correo_ucu(data['email']):
+            return jsonify({
+        "success": False, 
+        "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
+    }), 400
+        
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 # Verificar si ya existe
@@ -168,6 +203,13 @@ def update_participante(ci):
                 cursor.execute("SELECT ci FROM participante WHERE ci = %s", (ci,))
                 if not cursor.fetchone():
                     return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+                
+                # Validar correo UCU si se proporciona
+                if 'email' in data and not validar_correo_ucu(data['email']):
+                    return jsonify({
+        "success": False, 
+        "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
+    }), 400
                 
                 # Actualizar
                 query = "UPDATE participante SET nombre = %s, apellido = %s, email = %s WHERE ci = %s"

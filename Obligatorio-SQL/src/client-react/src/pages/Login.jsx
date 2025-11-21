@@ -9,6 +9,11 @@ function Login({ onLogin, onRegisterClick }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const validarCorreoUCU = (email) => {
+    const patron = /^[a-zA-Z0-9._%+-]+@(correo\.ucu\.edu\.uy|correo\.ucu\.uy)$/;
+    return patron.test(email);
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -18,19 +23,14 @@ function Login({ onLogin, onRegisterClick }) {
       return;
     }
 
+    // Validar correo UCU
+    if (!validarCorreoUCU(form.correo)) {
+      setError("Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @correo.ucu.uy)");
+      return;
+    }
+
     try {
       setLoading(true);
-
-      const checkResponse = await fetch(
-        `http://localhost:5000/api/participantes?email=${form.correo}`
-      );
-      const checkData = await checkResponse.json();
-
-      if (!checkData.success) {
-        setError("El correo no está registrado. Por favor regístrate.");
-        setLoading(false);
-        return;
-      }
 
       const loginResponse = await fetch("http://localhost:5000/api/login", {
         method: "POST",
@@ -45,7 +45,7 @@ function Login({ onLogin, onRegisterClick }) {
       if (loginData.success) {
         onLogin({ correo: form.correo });
       } else {
-        setError("Contraseña incorrecta");
+        setError(loginData.error || "Error al iniciar sesión");
       }
     } catch (err) {
       setError("Error de conexión con el servidor");
@@ -68,7 +68,7 @@ function Login({ onLogin, onRegisterClick }) {
             <p>Correo electrónico</p>
             <input
               type="email"
-              placeholder="tu@email.com"
+              placeholder="tu@correo.ucu.edu.uy"
               value={form.correo}
               onChange={(e) => setForm({ ...form, correo: e.target.value })}
               disabled={loading}

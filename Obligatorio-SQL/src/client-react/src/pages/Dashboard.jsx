@@ -56,7 +56,7 @@ export default function Dashboard() {
               <p className="stat-label">Salas Totales</p>
               <p className="stat-value">{salas.length}</p>
             </div>
-            <span className="stat-icon"></span>
+            <span className="stat-icon">🏛️</span>
           </div>
         </div>
 
@@ -66,7 +66,7 @@ export default function Dashboard() {
               <p className="stat-label">Turnos</p>
               <p className="stat-value">{turnos.length}</p>
             </div>
-            <span className="stat-icon"></span>
+            <span className="stat-icon">⏰</span>
           </div>
         </div>
 
@@ -76,7 +76,7 @@ export default function Dashboard() {
               <p className="stat-label">Reservas Hoy</p>
               <p className="stat-value">{reservasHoy.length}</p>
             </div>
-            <span className="stat-icon"></span>
+            <span className="stat-icon">📅</span>
           </div>
         </div>
 
@@ -88,14 +88,14 @@ export default function Dashboard() {
                 {((reservasHoy.length / (salas.length * turnos.length)) * 100).toFixed(0)}%
               </p>
             </div>
-            <span className="stat-icon"></span>
+            <span className="stat-icon">📊</span>
           </div>
         </div>
       </div>
 
       {/* Salas Más Demandadas */}
       <div className="card">
-        <h2 className="card-title">Salas Más Reservadas</h2>
+        <h2 className="card-title">🔥 Salas Más Reservadas</h2>
         <div className="table-container">
           <table className="table">
             <thead>
@@ -120,7 +120,7 @@ export default function Dashboard() {
 
       {/* Estado de Salas */}
       <div className="card">
-        <h2 className="card-title">Estado de Salas Hoy</h2>
+        <h2 className="card-title">📍 Estado de Salas Hoy</h2>
         <div className="rooms-grid">
           {salas.map((sala) => {
             const reservasEnSala = reservasHoy.filter(

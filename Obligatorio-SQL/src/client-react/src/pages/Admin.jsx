@@ -13,7 +13,7 @@ export default function Admin({ onLogout }) {
     nombre_sala: "",
     edificio: "",
     capacidad: "",
-    tipo_sala: "libre"
+    tipo_sala: "libre",
   });
 
   // Estado para Usuarios
@@ -23,7 +23,7 @@ export default function Admin({ onLogout }) {
   // Estado para Sanciones
   const [sancionForm, setSancionForm] = useState({
     ci_participante: "",
-    dias: ""
+    dias: "",
   });
 
   const [sanciones, setSanciones] = useState([]);
@@ -38,11 +38,11 @@ export default function Admin({ onLogout }) {
       if (activeTab === "salas") {
         const [salasRes, edificiosRes] = await Promise.all([
           fetch("http://localhost:5000/api/admin/salas"),
-          fetch("http://localhost:5000/api/edificios")
+          fetch("http://localhost:5000/api/edificios"),
         ]);
         const salasData = await salasRes.json();
         const edificiosData = await edificiosRes.json();
-        
+
         if (salasData.success) setSalas(salasData.data);
         if (edificiosData.success) setEdificios(edificiosData.data);
       }
@@ -56,15 +56,14 @@ export default function Admin({ onLogout }) {
       if (activeTab === "sanciones") {
         const [usuariosRes, sancionesRes] = await Promise.all([
           fetch("http://localhost:5000/api/admin/usuarios"),
-          fetch("http://localhost:5000/api/admin/sanciones")
+          fetch("http://localhost:5000/api/admin/sanciones"),
         ]);
         const usuariosData = await usuariosRes.json();
         const sancionesData = await sancionesRes.json();
-        
+
         if (usuariosData.success) setUsuarios(usuariosData.data);
         if (sancionesData.success) setSanciones(sancionesData.data);
       }
-
     } catch (err) {
       console.error("Error:", err);
       showMessage("error", "Error al cargar datos");
@@ -82,7 +81,7 @@ export default function Admin({ onLogout }) {
 
   const handleCrearSala = async (e) => {
     e.preventDefault();
-    
+
     if (!nuevaSala.nombre_sala || !nuevaSala.edificio || !nuevaSala.capacidad) {
       showMessage("error", "Todos los campos son obligatorios");
       return;
@@ -92,18 +91,23 @@ export default function Admin({ onLogout }) {
       const res = await fetch("http://localhost:5000/api/admin/sala", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevaSala)
+        body: JSON.stringify(nuevaSala),
       });
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
-        showMessage("success", "✅ Sala creada exitosamente");
+        showMessage("success", "Sala creada exitosamente");
         setShowCreateSala(false);
-        setNuevaSala({ nombre_sala: "", edificio: "", capacidad: "", tipo_sala: "libre" });
+        setNuevaSala({
+          nombre_sala: "",
+          edificio: "",
+          capacidad: "",
+          tipo_sala: "libre",
+        });
         loadData();
       } else {
-        showMessage("error", `❌ ${data.error}`);
+        showMessage("error", `${data.error}`);
       }
     } catch (err) {
       console.error(err);
@@ -112,23 +116,29 @@ export default function Admin({ onLogout }) {
   };
 
   const handleEliminarSala = async (nombre_sala, edificio) => {
-    if (!confirm(`¿Eliminar sala "${nombre_sala}" del edificio "${edificio}"?\n\nEsto eliminará todas las reservas asociadas.`)) {
+    if (
+      !confirm(
+        `¿Eliminar sala "${nombre_sala}" del edificio "${edificio}"?\n\nEsto eliminará todas las reservas asociadas.`
+      )
+    ) {
       return;
     }
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/admin/sala/${encodeURIComponent(nombre_sala)}/${encodeURIComponent(edificio)}`,
+        `http://localhost:5000/api/admin/sala/${encodeURIComponent(
+          nombre_sala
+        )}/${encodeURIComponent(edificio)}`,
         { method: "DELETE" }
       );
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
-        showMessage("success", "✅ Sala eliminada");
+        showMessage("success", "Sala eliminada");
         loadData();
       } else {
-        showMessage("error", `❌ ${data.error}`);
+        showMessage("error", `${data.error}`);
       }
     } catch (err) {
       console.error(err);
@@ -139,7 +149,11 @@ export default function Admin({ onLogout }) {
   // ==================== GESTIÓN DE USUARIOS ====================
 
   const handleEliminarUsuario = async (ci, nombre, apellido) => {
-    if (!confirm(`¿Eliminar usuario ${nombre} ${apellido}?\n\nEsto eliminará todas sus reservas y datos asociados.`)) {
+    if (
+      !confirm(
+        `¿Eliminar usuario ${nombre} ${apellido}?\n\nEsto eliminará todas sus reservas y datos asociados.`
+      )
+    ) {
       return;
     }
 
@@ -148,14 +162,14 @@ export default function Admin({ onLogout }) {
         `http://localhost:5000/api/participante/${ci}/cascade`,
         { method: "DELETE" }
       );
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
-        showMessage("success", "✅ Usuario eliminado");
+        showMessage("success", "Usuario eliminado");
         loadData();
       } else {
-        showMessage("error", `❌ ${data.error}`);
+        showMessage("error", `${data.error}`);
       }
     } catch (err) {
       console.error(err);
@@ -167,7 +181,7 @@ export default function Admin({ onLogout }) {
 
   const handleCrearSancion = async (e) => {
     e.preventDefault();
-    
+
     if (!sancionForm.ci_participante || !sancionForm.dias) {
       showMessage("error", "Todos los campos son obligatorios");
       return;
@@ -182,17 +196,17 @@ export default function Admin({ onLogout }) {
       const res = await fetch("http://localhost:5000/api/admin/sancion", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(sancionForm)
+        body: JSON.stringify(sancionForm),
       });
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
-        showMessage("success", `✅ ${data.message}`);
+        showMessage("success", `${data.message}`);
         setSancionForm({ ci_participante: "", dias: "" });
         loadData();
       } else {
-        showMessage("error", `❌ ${data.error}`);
+        showMessage("error", `${data.error}`);
       }
     } catch (err) {
       console.error(err);
@@ -210,14 +224,14 @@ export default function Admin({ onLogout }) {
         `http://localhost:5000/api/admin/sancion/${idSancion}`,
         { method: "DELETE" }
       );
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
-        showMessage("success", "✅ Sanción eliminada");
+        showMessage("success", "Sanción eliminada");
         loadData();
       } else {
-        showMessage("error", `❌ ${data.error}`);
+        showMessage("error", `${data.error}`);
       }
     } catch (err) {
       console.error(err);
@@ -227,7 +241,7 @@ export default function Admin({ onLogout }) {
 
   // ==================== FILTROS ====================
 
-  const usuariosFiltrados = usuarios.filter(u => {
+  const usuariosFiltrados = usuarios.filter((u) => {
     if (!searchTerm) return true;
     const term = searchTerm.toLowerCase();
     return (
@@ -255,20 +269,29 @@ export default function Admin({ onLogout }) {
       <div className="card">
         <div className="card-header">
           <div>
-            <h1 className="card-title" style={{ fontSize: '28px', marginBottom: '8px' }}>
-              🛡️ Panel de Administración
+            <h1
+              className="card-title"
+              style={{ fontSize: "28px", marginBottom: "8px" }}
+            >
+              Panel de Administración
             </h1>
-            <p className="card-subtitle">Gestión de salas, usuarios y sanciones</p>
+            <p className="card-subtitle">
+              Gestión de salas, usuarios y sanciones
+            </p>
           </div>
           <button onClick={onLogout} className="btn btn-secondary">
-            🚪 Cerrar Sesión
+            Cerrar Sesión
           </button>
         </div>
       </div>
 
       {/* Mensajes */}
       {message.text && (
-        <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
+        <div
+          className={`alert ${
+            message.type === "success" ? "alert-success" : "alert-error"
+          }`}
+        >
           {message.text}
         </div>
       )}
@@ -280,19 +303,19 @@ export default function Admin({ onLogout }) {
             className={`tab ${activeTab === "salas" ? "active" : ""}`}
             onClick={() => setActiveTab("salas")}
           >
-            🏛️ Gestión de Salas
+            Gestión de Salas
           </button>
           <button
             className={`tab ${activeTab === "usuarios" ? "active" : ""}`}
             onClick={() => setActiveTab("usuarios")}
           >
-            👥 Gestión de Usuarios
+            Gestión de Usuarios
           </button>
           <button
             className={`tab ${activeTab === "sanciones" ? "active" : ""}`}
             onClick={() => setActiveTab("sanciones")}
           >
-            ⚠️ Sancionar Usuarios
+            Sancionar Usuarios
           </button>
         </div>
       </div>
@@ -306,7 +329,7 @@ export default function Admin({ onLogout }) {
               onClick={() => setShowCreateSala(!showCreateSala)}
               className="btn btn-primary"
             >
-              {showCreateSala ? "❌ Cancelar" : "➕ Nueva Sala"}
+              {showCreateSala ? "Cancelar" : "Nueva Sala"}
             </button>
           </div>
 
@@ -320,7 +343,12 @@ export default function Admin({ onLogout }) {
                     type="text"
                     placeholder="Ej: Sala 301"
                     value={nuevaSala.nombre_sala}
-                    onChange={(e) => setNuevaSala({ ...nuevaSala, nombre_sala: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaSala({
+                        ...nuevaSala,
+                        nombre_sala: e.target.value,
+                      })
+                    }
                     required
                   />
                 </div>
@@ -329,7 +357,9 @@ export default function Admin({ onLogout }) {
                   <label>Edificio *</label>
                   <select
                     value={nuevaSala.edificio}
-                    onChange={(e) => setNuevaSala({ ...nuevaSala, edificio: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaSala({ ...nuevaSala, edificio: e.target.value })
+                    }
                     required
                   >
                     <option value="">-- Seleccionar Edificio --</option>
@@ -348,7 +378,9 @@ export default function Admin({ onLogout }) {
                     min="1"
                     placeholder="Ej: 8"
                     value={nuevaSala.capacidad}
-                    onChange={(e) => setNuevaSala({ ...nuevaSala, capacidad: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaSala({ ...nuevaSala, capacidad: e.target.value })
+                    }
                     required
                   />
                 </div>
@@ -357,7 +389,9 @@ export default function Admin({ onLogout }) {
                   <label>Tipo de Sala *</label>
                   <select
                     value={nuevaSala.tipo_sala}
-                    onChange={(e) => setNuevaSala({ ...nuevaSala, tipo_sala: e.target.value })}
+                    onChange={(e) =>
+                      setNuevaSala({ ...nuevaSala, tipo_sala: e.target.value })
+                    }
                     required
                   >
                     <option value="libre">Libre</option>
@@ -368,7 +402,7 @@ export default function Admin({ onLogout }) {
               </div>
 
               <button type="submit" className="btn btn-primary">
-                ✅ Crear Sala
+                Crear Sala
               </button>
             </form>
           )}
@@ -394,13 +428,17 @@ export default function Admin({ onLogout }) {
                   <tr key={`${sala.nombre_sala}-${sala.edificio}`}>
                     <td className="font-medium">{sala.nombre_sala}</td>
                     <td>{sala.edificio}</td>
-                    <td>👥 {sala.capacidad}</td>
+                    <td>{sala.capacidad}</td>
                     <td>
-                      <span className={`badge ${
-                        sala.tipo_sala === 'posgrado' ? 'badge-warning' :
-                        sala.tipo_sala === 'docente' ? 'badge-info' :
-                        'badge-success'
-                      }`}>
+                      <span
+                        className={`badge ${
+                          sala.tipo_sala === "posgrado"
+                            ? "badge-warning"
+                            : sala.tipo_sala === "docente"
+                            ? "badge-info"
+                            : "badge-success"
+                        }`}
+                      >
                         {sala.tipo_sala}
                       </span>
                     </td>
@@ -408,10 +446,12 @@ export default function Admin({ onLogout }) {
                     <td>{sala.reservas_activas || 0}</td>
                     <td>
                       <button
-                        onClick={() => handleEliminarSala(sala.nombre_sala, sala.edificio)}
+                        onClick={() =>
+                          handleEliminarSala(sala.nombre_sala, sala.edificio)
+                        }
                         className="btn btn-danger btn-sm"
                       >
-                        🗑️ Eliminar
+                        Eliminar
                       </button>
                     </td>
                   </tr>
@@ -429,11 +469,11 @@ export default function Admin({ onLogout }) {
             <h2 className="card-title">Ver Datos de Usuarios</h2>
             <input
               type="text"
-              placeholder="🔍 Buscar por CI, nombre, apellido o email..."
+              placeholder="Buscar por CI, nombre, apellido o email..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="search-input"
-              style={{ maxWidth: '400px' }}
+              style={{ maxWidth: "400px" }}
             />
           </div>
 
@@ -455,35 +495,49 @@ export default function Admin({ onLogout }) {
                 {usuariosFiltrados.map((usuario) => (
                   <tr key={usuario.ci}>
                     <td className="font-medium">{usuario.ci}</td>
-                    <td>{usuario.nombre} {usuario.apellido}</td>
+                    <td>
+                      {usuario.nombre} {usuario.apellido}
+                    </td>
                     <td className="text-secondary">{usuario.email}</td>
                     <td>
-                      <span className={`badge ${
-                        usuario.rol === 'docente' ? 'badge-info' :
-                        usuario.rol === 'admin' ? 'badge-danger' :
-                        'badge-success'
-                      }`}>
-                        {usuario.rol || 'estudiante'}
+                      <span
+                        className={`badge ${
+                          usuario.rol === "docente"
+                            ? "badge-info"
+                            : usuario.rol === "admin"
+                            ? "badge-danger"
+                            : "badge-success"
+                        }`}
+                      >
+                        {usuario.rol || "estudiante"}
                       </span>
                     </td>
-                    <td className="text-secondary">{usuario.nombre_programa || 'N/A'}</td>
+                    <td className="text-secondary">
+                      {usuario.nombre_programa || "N/A"}
+                    </td>
                     <td>{usuario.total_reservas || 0}</td>
                     <td>
                       {usuario.sanciones_activas > 0 ? (
                         <span className="badge badge-danger">
-                          🚫 {usuario.sanciones_activas} activa(s)
+                          {usuario.sanciones_activas} activa(s)
                         </span>
                       ) : (
                         <span className="text-secondary">Sin sanciones</span>
                       )}
                     </td>
                     <td>
-                      {usuario.rol !== 'admin' && (
+                      {usuario.rol !== "admin" && (
                         <button
-                          onClick={() => handleEliminarUsuario(usuario.ci, usuario.nombre, usuario.apellido)}
+                          onClick={() =>
+                            handleEliminarUsuario(
+                              usuario.ci,
+                              usuario.nombre,
+                              usuario.apellido
+                            )
+                          }
                           className="btn btn-danger btn-sm"
                         >
-                          🗑️ Eliminar
+                          Eliminar
                         </button>
                       )}
                     </td>
@@ -506,19 +560,24 @@ export default function Admin({ onLogout }) {
       {activeTab === "sanciones" && (
         <div className="card">
           <h2 className="card-title">Aplicar Sanción a Usuario</h2>
-          
+
           <form onSubmit={handleCrearSancion} className="form-section">
             <div className="form-grid">
               <div className="form-field">
                 <label>Seleccionar Usuario *</label>
                 <select
                   value={sancionForm.ci_participante}
-                  onChange={(e) => setSancionForm({ ...sancionForm, ci_participante: e.target.value })}
+                  onChange={(e) =>
+                    setSancionForm({
+                      ...sancionForm,
+                      ci_participante: e.target.value,
+                    })
+                  }
                   required
                 >
                   <option value="">-- Seleccionar Usuario --</option>
                   {usuarios
-                    .filter(u => u.rol !== 'admin')
+                    .filter((u) => u.rol !== "admin")
                     .map((u) => (
                       <option key={u.ci} value={u.ci}>
                         {u.ci} - {u.nombre} {u.apellido} ({u.email})
@@ -535,31 +594,39 @@ export default function Admin({ onLogout }) {
                   max="365"
                   placeholder="Ej: 7"
                   value={sancionForm.dias}
-                  onChange={(e) => setSancionForm({ ...sancionForm, dias: e.target.value })}
+                  onChange={(e) =>
+                    setSancionForm({ ...sancionForm, dias: e.target.value })
+                  }
                   required
                 />
                 <small className="form-hint">
-                  La sanción comenzará hoy y durará la cantidad de días especificada
+                  La sanción comenzará hoy y durará la cantidad de días
+                  especificada
                 </small>
               </div>
             </div>
 
             <button type="submit" className="btn btn-primary">
-              ⚠️ Aplicar Sanción
+              Aplicar Sanción
             </button>
           </form>
 
-         <div className="divider"></div>
+          <div className="divider"></div>
 
           {/* Tabla de Sanciones Activas */}
           <div>
-            <h3 className="card-title" style={{ fontSize: '20px', marginBottom: '16px' }}>
-              🚫 Sanciones Activas
+            <h3
+              className="card-title"
+              style={{ fontSize: "20px", marginBottom: "16px" }}
+            >
+              Sanciones Activas
             </h3>
 
             {sanciones.length === 0 ? (
               <div className="empty-state">
-                <p className="empty-state-text">No hay sanciones activas en el sistema</p>
+                <p className="empty-state-text">
+                  No hay sanciones activas en el sistema
+                </p>
               </div>
             ) : (
               <div className="table-container">
@@ -568,7 +635,7 @@ export default function Admin({ onLogout }) {
                     <tr>
                       <th>Usuario</th>
                       <th>Email</th>
-                      <th>Fecha Inicio</th> 
+                      <th>Fecha Inicio</th>
                       <th>Fecha Fin</th>
                       <th>Estado</th>
                       <th>Acciones</th>
@@ -576,20 +643,23 @@ export default function Admin({ onLogout }) {
                   </thead>
                   <tbody>
                     {sanciones.map((sancion) => {
-                        const hoy = new Date();
-                        hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
-                        
-                        const fechaInicio = new Date(sancion.fecha_inicio);
-                        const fechaFin = new Date(sancion.fecha_fin);
-                        
-                        const activa = fechaInicio <= hoy && fechaFin >= hoy;
-                      
+                      const hoy = new Date();
+                      hoy.setHours(0, 0, 0, 0); // Normalizar a medianoche
+
+                      const fechaInicio = new Date(sancion.fecha_inicio);
+                      const fechaFin = new Date(sancion.fecha_fin);
+
+                      const activa = fechaInicio <= hoy && fechaFin >= hoy;
+
                       return (
                         <tr key={sancion.id_sancion}>
                           <td className="font-medium">
                             {sancion.nombre} {sancion.apellido}
                             <br />
-                            <span className="text-secondary" style={{ fontSize: '12px' }}>
+                            <span
+                              className="text-secondary"
+                              style={{ fontSize: "12px" }}
+                            >
                               CI: {sancion.ci_participante}
                             </span>
                           </td>
@@ -597,16 +667,25 @@ export default function Admin({ onLogout }) {
                           <td>{sancion.fecha_inicio}</td>
                           <td>{sancion.fecha_fin}</td>
                           <td>
-                            <span className={`badge ${activa ? 'badge-danger' : 'badge-secondary'}`}>
-                              {activa ? '🚫 ACTIVA' : '✓ Finalizada'}
+                            <span
+                              className={`badge ${
+                                activa ? "badge-danger" : "badge-secondary"
+                              }`}
+                            >
+                              {activa ? "ACTIVA" : "Finalizada"}
                             </span>
                           </td>
                           <td>
                             <button
-                              onClick={() => handleEliminarSancion(sancion.id_sancion, `${sancion.nombre} ${sancion.apellido}`)}
+                              onClick={() =>
+                                handleEliminarSancion(
+                                  sancion.id_sancion,
+                                  `${sancion.nombre} ${sancion.apellido}`
+                                )
+                              }
                               className="btn btn-danger btn-sm"
                             >
-                              🗑️ Quitar Sanción
+                              Quitar Sanción
                             </button>
                           </td>
                         </tr>
@@ -621,12 +700,17 @@ export default function Admin({ onLogout }) {
           <div className="divider"></div>
 
           <div className="info-box">
-
-            <h3 style={{ fontSize: '18px', marginBottom: '12px' }}>ℹ️ Información sobre Sanciones</h3>
-            <ul style={{ marginLeft: '20px', lineHeight: '1.8' }}>
+            <h3 style={{ fontSize: "18px", marginBottom: "12px" }}>
+              Información sobre Sanciones
+            </h3>
+            <ul style={{ marginLeft: "20px", lineHeight: "1.8" }}>
               <li>Las sanciones impiden al usuario realizar nuevas reservas</li>
-              <li>La sanción se aplica desde hoy hasta la fecha especificada</li>
-              <li>Los usuarios pueden ver sus sanciones activas en su perfil</li>
+              <li>
+                La sanción se aplica desde hoy hasta la fecha especificada
+              </li>
+              <li>
+                Los usuarios pueden ver sus sanciones activas en su perfil
+              </li>
               <li>Las sanciones no afectan reservas ya realizadas</li>
             </ul>
           </div>

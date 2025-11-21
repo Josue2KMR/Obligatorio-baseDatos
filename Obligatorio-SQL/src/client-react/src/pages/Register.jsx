@@ -1,5 +1,5 @@
 import { useState } from "react";
-import "../styles.css"; // Importar la stylesheet
+import "../styles.css";
 
 function Register({ onRegisterSuccess, onBackToLogin }) {
   const [form, setForm] = useState({
@@ -12,6 +12,11 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const validarCorreoUCU = (email) => {
+    const patron = /^[a-zA-Z0-9._%+-]+@(correo\.ucu\.edu\.uy|correo\.ucu\.uy)$/;
+    return patron.test(email);
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,6 +32,14 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
       !form.confirmarContraseña
     ) {
       setError("Todos los campos son obligatorios");
+      return;
+    }
+
+    // Validar correo UCU
+    if (!validarCorreoUCU(form.email)) {
+      setError(
+        "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @correo.ucu.uy)"
+      );
       return;
     }
 
@@ -86,8 +99,19 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
       const loginData = await loginResponse.json();
 
       if (loginData.success) {
-        alert("¡Registro exitoso! Ahora puedes iniciar sesión.");
-        onRegisterSuccess({ correo: form.email });
+        // Cambiar de alert a un mensaje de éxito temporal
+        setError(""); // Limpiar errores previos
+
+        // Crear elemento de éxito temporal
+        const successDiv = document.createElement("div");
+        successDiv.className = "success-message";
+        successDiv.textContent = "¡Registro exitoso! Redirigiendo...";
+        document.querySelector(".auth-card").prepend(successDiv);
+
+        // Redirigir después de 2 segundos
+        setTimeout(() => {
+          onRegisterSuccess({ correo: form.email });
+        }, 2000);
       } else {
         setError(loginData.error || "Error al crear credenciales de login");
       }
@@ -142,14 +166,18 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
           </div>
 
           <div className="form-group">
-            <p>Correo Electrónico</p>
+            <p>Correo Electrónico UCU</p>
             <input
               type="email"
-              placeholder="tu@email.com"
+              placeholder="tu@correo.ucu.edu.uy"
               value={form.email}
               onChange={(e) => setForm({ ...form, email: e.target.value })}
               disabled={loading}
             />
+            <small style={{ color: "#666", fontSize: "0.85rem" }}>
+              Debe ser un correo institucional (@correo.ucu.edu.uy o
+              @ucu.edu.uy)
+            </small>
           </div>
 
           <div className="form-group">
@@ -176,7 +204,11 @@ function Register({ onRegisterSuccess, onBackToLogin }) {
             />
           </div>
 
-          <button type="submit" disabled={loading} className="btn-primary-login">
+          <button
+            type="submit"
+            disabled={loading}
+            className="btn-primary-login"
+          >
             {loading ? "Registrando..." : "Crear Cuenta"}
           </button>
         </form>

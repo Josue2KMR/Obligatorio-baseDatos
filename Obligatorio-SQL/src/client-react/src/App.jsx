@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import Login from "./pages/Login";
+import Login from "./pages/login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Reservar from "./pages/Reservar";
@@ -22,7 +22,7 @@ function App() {
             `http://localhost:5000/api/admin/verificar?correo=${user.correo}`
           );
           const data = await res.json();
-          
+
           if (data.success) {
             setIsAdmin(data.is_admin);
             // Si es admin, mostrar el panel de admin por defecto
@@ -39,8 +39,29 @@ function App() {
     checkAdmin();
   }, [user]);
 
-  const handleLogin = (userData) => {
-    setUser(userData);
+  const handleLogin = async (userData) => {
+    try {
+      // Obtener datos completos del participante
+      const res = await fetch(
+        `http://localhost:5000/api/participantes?email=${userData.correo}`
+      );
+      const data = await res.json();
+
+      if (data.success && data.data) {
+        setUser({
+          correo: userData.correo,
+          nombre: data.data.nombre,
+          apellido: data.data.apellido,
+          ci: data.data.ci,
+        });
+      } else {
+        setUser(userData);
+      }
+    } catch (err) {
+      console.error("Error obteniendo datos del usuario:", err);
+      setUser(userData);
+    }
+
     setCurrentView("main");
     setActiveSection("dashboard");
   };
@@ -82,15 +103,20 @@ function App() {
       <aside className="sidebar">
         <div className="sidebar-header">
           <h1 className="logo">OneRoom UCU</h1>
-          <p className="user-email">{user?.correo}</p>
-          {isAdmin && (
-            <span className="admin-badge">Administrador</span>
+          {user?.nombre && user?.apellido && (
+            <p className="user-name">
+              {user.nombre} {user.apellido}
+            </p>
           )}
+          <p className="user-email">{user?.correo}</p>
+          {isAdmin && <span className="admin-badge">Administrador</span>}
         </div>
 
         <nav className="nav-menu">
           <button
-            className={`nav-item ${activeSection === "dashboard" ? "active" : ""}`}
+            className={`nav-item ${
+              activeSection === "dashboard" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("dashboard")}
           >
             <span className="nav-icon"></span>
@@ -98,7 +124,9 @@ function App() {
           </button>
 
           <button
-            className={`nav-item ${activeSection === "reservar" ? "active" : ""}`}
+            className={`nav-item ${
+              activeSection === "reservar" ? "active" : ""
+            }`}
             onClick={() => setActiveSection("reservar")}
           >
             <span className="nav-icon"></span>
@@ -117,7 +145,9 @@ function App() {
             <>
               <div className="nav-divider"></div>
               <button
-                className={`nav-item admin-item ${activeSection === "admin" ? "active" : ""}`}
+                className={`nav-item admin-item ${
+                  activeSection === "admin" ? "active" : ""
+                }`}
                 onClick={() => setActiveSection("admin")}
               >
                 <span className="nav-icon"></span>
@@ -127,19 +157,19 @@ function App() {
           )}
         </nav>
 
-        <div className="sidebar-footer">
-          <button onClick={handleLogout} className="btn-logout">
-            🚪 Cerrar Sesión
-          </button>
-        </div>
+        
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
         {activeSection === "dashboard" && <Dashboard />}
         {activeSection === "reservar" && <Reservar user={user} />}
-        {activeSection === "perfil" && <Profile user={user} onLogout={handleLogout} />}
-        {activeSection === "admin" && isAdmin && <Admin user={user} onLogout={handleLogout} />}
+        {activeSection === "perfil" && (
+          <Profile user={user} onLogout={handleLogout} />
+        )}
+        {activeSection === "admin" && isAdmin && (
+          <Admin user={user} onLogout={handleLogout} />
+        )}
       </main>
     </div>
   );
