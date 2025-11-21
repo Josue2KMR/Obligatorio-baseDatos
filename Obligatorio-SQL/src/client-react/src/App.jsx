@@ -12,6 +12,7 @@ function App() {
   const [user, setUser] = useState(null);
   const [isAdmin, setIsAdmin] = useState(false);
   const [activeSection, setActiveSection] = useState("dashboard");
+  
 
   // Verificar si el usuario es admin cuando inicia sesión
   useEffect(() => {

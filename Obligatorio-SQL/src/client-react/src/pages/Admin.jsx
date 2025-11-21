@@ -28,6 +28,11 @@ export default function Admin({ onLogout }) {
 
   const [sanciones, setSanciones] = useState([]);
 
+  // Estado para confirmaciones
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null);
+  const [confirmMessage, setConfirmMessage] = useState("");
+
   useEffect(() => {
     loadData();
   }, [activeTab]);
@@ -116,67 +121,63 @@ export default function Admin({ onLogout }) {
   };
 
   const handleEliminarSala = async (nombre_sala, edificio) => {
-    if (
-      !confirm(
-        `¿Eliminar sala "${nombre_sala}" del edificio "${edificio}"?\n\nEsto eliminará todas las reservas asociadas.`
-      )
-    ) {
-      return;
-    }
+    setConfirmMessage(
+      `¿Eliminar sala "${nombre_sala}" del edificio "${edificio}"?\n\nEsto eliminará todas las reservas asociadas.`
+    );
+    setConfirmAction(() => async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/admin/sala/${encodeURIComponent(
+            nombre_sala
+          )}/${encodeURIComponent(edificio)}`,
+          { method: "DELETE" }
+        );
 
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/admin/sala/${encodeURIComponent(
-          nombre_sala
-        )}/${encodeURIComponent(edificio)}`,
-        { method: "DELETE" }
-      );
+        const data = await res.json();
 
-      const data = await res.json();
-
-      if (data.success) {
-        showMessage("success", "Sala eliminada");
-        loadData();
-      } else {
-        showMessage("error", `${data.error}`);
+        if (data.success) {
+          showMessage("success", "Sala eliminada");
+          loadData();
+        } else {
+          showMessage("error", `${data.error}`);
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage("error", "Error al eliminar sala");
       }
-    } catch (err) {
-      console.error(err);
-      showMessage("error", "Error al eliminar sala");
-    }
+      setShowConfirm(false);
+    });
+    setShowConfirm(true);
   };
-
   // ==================== GESTIÓN DE USUARIOS ====================
 
   const handleEliminarUsuario = async (ci, nombre, apellido) => {
-    if (
-      !confirm(
-        `¿Eliminar usuario ${nombre} ${apellido}?\n\nEsto eliminará todas sus reservas y datos asociados.`
-      )
-    ) {
-      return;
-    }
+    setConfirmMessage(
+      `¿Eliminar usuario ${nombre} ${apellido}?\n\nEsto eliminará todas sus reservas y datos asociados.`
+    );
+    setConfirmAction(() => async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/participante/${ci}/cascade`,
+          { method: "DELETE" }
+        );
 
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/participante/${ci}/cascade`,
-        { method: "DELETE" }
-      );
+        const data = await res.json();
 
-      const data = await res.json();
-
-      if (data.success) {
-        showMessage("success", "Usuario eliminado");
-        loadData();
-      } else {
-        showMessage("error", `${data.error}`);
+        if (data.success) {
+          showMessage("success", "Usuario eliminado");
+          loadData();
+        } else {
+          showMessage("error", `${data.error}`);
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage("error", "Error al eliminar usuario");
       }
-    } catch (err) {
-      console.error(err);
-      showMessage("error", "Error al eliminar usuario");
-    }
+      setShowConfirm(false);
+    });
+    setShowConfirm(true);
   };
-
   // ==================== GESTIÓN DE SANCIONES ====================
 
   const handleCrearSancion = async (e) => {
@@ -215,30 +216,30 @@ export default function Admin({ onLogout }) {
   };
 
   const handleEliminarSancion = async (idSancion, nombreUsuario) => {
-    if (!confirm(`¿Eliminar sanción de ${nombreUsuario}?`)) {
-      return;
-    }
+    setConfirmMessage(`¿Eliminar sanción de ${nombreUsuario}?`);
+    setConfirmAction(() => async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:5000/api/admin/sancion/${idSancion}`,
+          { method: "DELETE" }
+        );
 
-    try {
-      const res = await fetch(
-        `http://localhost:5000/api/admin/sancion/${idSancion}`,
-        { method: "DELETE" }
-      );
+        const data = await res.json();
 
-      const data = await res.json();
-
-      if (data.success) {
-        showMessage("success", "Sanción eliminada");
-        loadData();
-      } else {
-        showMessage("error", `${data.error}`);
+        if (data.success) {
+          showMessage("success", "Sanción eliminada");
+          loadData();
+        } else {
+          showMessage("error", `${data.error}`);
+        }
+      } catch (err) {
+        console.error(err);
+        showMessage("error", "Error al eliminar sanción");
       }
-    } catch (err) {
-      console.error(err);
-      showMessage("error", "Error al eliminar sanción");
-    }
+      setShowConfirm(false);
+    });
+    setShowConfirm(true);
   };
-
   // ==================== FILTROS ====================
 
   const usuariosFiltrados = usuarios.filter((u) => {
@@ -319,6 +320,30 @@ export default function Admin({ onLogout }) {
           </button>
         </div>
       </div>
+
+      {/* Modal de Confirmación */}
+      {showConfirm && (
+        <div className="modal-overlay" onClick={() => setShowConfirm(false)}>
+          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
+            <h3 className="modal-title">Confirmar Acción</h3>
+            <p className="modal-message">{confirmMessage}</p>
+            <div className="modal-actions">
+              <button
+                onClick={() => setShowConfirm(false)}
+                className="btn btn-secondary"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => confirmAction && confirmAction()}
+                className="btn btn-danger"
+              >
+                Confirmar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ==================== TAB: SALAS ==================== */}
       {activeTab === "salas" && (
