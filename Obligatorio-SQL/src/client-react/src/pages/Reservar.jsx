@@ -138,7 +138,7 @@ export default function Reservar({ user }) {
       <div className="content-wrapper">
         <div className="card">
           <h1 className="card-title" style={{ fontSize: '28px', marginBottom: '8px' }}>
-            📅 Reservar Sala de Estudio
+            Reservar Sala de Estudio
           </h1>
           <p className="card-subtitle">
             Completa el formulario para realizar tu reserva
@@ -151,7 +151,7 @@ export default function Reservar({ user }) {
               
               {/* SALA */}
               <div className="form-field">
-                <label>1️⃣ Sala</label>
+                <label>Sala</label>
                 <select
                   required
                   value={salaSeleccionada ? `${salaSeleccionada.nombre_sala}|${salaSeleccionada.edificio}` : ""}
@@ -167,7 +167,7 @@ export default function Reservar({ user }) {
                     setSalaSeleccionada(sala);
                   }}
                 >
-                  <option value="">-- Elige una Sala --</option>
+                  <option value="">Elegir Sala</option>
                   {salasDisponibles.map((sala) => (
                     <option
                       key={`${sala.nombre_sala}-${sala.edificio}`}
@@ -181,7 +181,7 @@ export default function Reservar({ user }) {
 
               {/* FECHA */}
               <div className="form-field">
-                <label>2️⃣ Fecha</label>
+                <label>Fecha</label>
                 <input
                   required
                   type="date"
@@ -198,14 +198,14 @@ export default function Reservar({ user }) {
 
               {/* TURNO */}
               <div className="form-field">
-                <label>3️⃣ Turno</label>
+                <label>Turno</label>
                 <select
                   required
                   value={turnoSeleccionado}
                   onChange={(e) => setTurnoSeleccionado(e.target.value)}
                   className="w-full p-2 border rounded"
                 >
-                  <option value="">-- Elige un Turno --</option>
+                  <option value="">Elegir Turno</option>
 
                   {turnos.map((turno) => {
                     // Convertir HH:MM a minutos totales
@@ -247,7 +247,7 @@ export default function Reservar({ user }) {
             {/* RESUMEN */}
             {(salaSeleccionada || fechaReserva || turnoSeleccionado) && (
               <div className="reservation-summary">
-                <h2 className="summary-title">📋 Resumen de tu Reserva</h2>
+                <h2 className="summary-title">Resumen de tu Reserva</h2>
                 <div className="summary-content">
                   {salaSeleccionada && (
                     <p>
@@ -256,12 +256,12 @@ export default function Reservar({ user }) {
                   )}
                   {fechaReserva && (
                     <p>
-                      <strong>📅 Fecha:</strong> {formatearFechaDisplay(fechaReserva)}
+                      <strong>Fecha:</strong> {formatearFechaDisplay(fechaReserva)}
                     </p>
                   )}
                   {turnoSeleccionado && (
                     <p>
-                      <strong>⏰ Horario:</strong> {getTurnoInfo(turnoSeleccionado)}
+                      <strong>Horario:</strong> {getTurnoInfo(turnoSeleccionado)}
                     </p>
                   )}
                 </div>
@@ -282,14 +282,14 @@ export default function Reservar({ user }) {
                 onClick={handleClearForm}
                 className="btn btn-outline"
               >
-                🔄 Limpiar Formulario
+                Limpiar
               </button>
               <button
                 type="submit"
                 className="btn btn-primary "
                 disabled={!salaSeleccionada || !fechaReserva || !turnoSeleccionado}
               >
-                ✅ Confirmar Reserva
+                Confirmar Reserva
               </button>
             </div>
           </div>

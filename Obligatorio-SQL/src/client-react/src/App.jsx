@@ -84,7 +84,7 @@ function App() {
           <h1 className="logo">OneRoom UCU</h1>
           <p className="user-email">{user?.correo}</p>
           {isAdmin && (
-            <span className="admin-badge">🛡️ Administrador</span>
+            <span className="admin-badge">Administrador</span>
           )}
         </div>
 
@@ -93,7 +93,7 @@ function App() {
             className={`nav-item ${activeSection === "dashboard" ? "active" : ""}`}
             onClick={() => setActiveSection("dashboard")}
           >
-            <span className="nav-icon">📊</span>
+            <span className="nav-icon"></span>
             Dashboard
           </button>
 
@@ -101,7 +101,7 @@ function App() {
             className={`nav-item ${activeSection === "reservar" ? "active" : ""}`}
             onClick={() => setActiveSection("reservar")}
           >
-            <span className="nav-icon">📅</span>
+            <span className="nav-icon"></span>
             Reservar Sala
           </button>
 
@@ -109,7 +109,7 @@ function App() {
             className={`nav-item ${activeSection === "perfil" ? "active" : ""}`}
             onClick={() => setActiveSection("perfil")}
           >
-            <span className="nav-icon">👤</span>
+            <span className="nav-icon"></span>
             Mi Perfil
           </button>
 
@@ -120,7 +120,7 @@ function App() {
                 className={`nav-item admin-item ${activeSection === "admin" ? "active" : ""}`}
                 onClick={() => setActiveSection("admin")}
               >
-                <span className="nav-icon">🛡️</span>
+                <span className="nav-icon"></span>
                 Panel Admin
               </button>
             </>

@@ -496,12 +496,12 @@ body {
 }
 
 .btn-logout {
-  width: 100%;
-  padding: 0.875rem;
+  width: 90%;
+  padding: 2rem;
   background-color: white;
   color: var(--text-secondary);
   border: 1px solid var(--border-color);
-  border-radius: 0.5rem;
+  border-radius: 2rem;
   font-size: 0.95rem;
   font-weight: 500;
   cursor: pointer;
@@ -509,7 +509,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: 2rem;
 }
 
 .btn-logout:hover {
@@ -923,7 +923,7 @@ body {
 }
 
 .profile-field {
-  padding: 16px;
+  padding: 20px;
   background-color: #F9FAFB;
   border-radius: 8px;
   border: 1px solid #E5E7EB;
@@ -931,7 +931,7 @@ body {
 
 .profile-field label {
   display: block;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 600;
   color: #6B7280;
   text-transform: uppercase;
@@ -940,7 +940,7 @@ body {
 }
 
 .profile-field p {
-  font-size: 18px;
+  font-size: 13px;
   font-weight: 500;
   color: #111827;
   margin: 0;

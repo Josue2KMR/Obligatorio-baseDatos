@@ -162,9 +162,9 @@ export default function Perfil({ user, onLogout }) {
       {/* Info Personal */}
       <div className="card">
         <div className="card-header">
-          <h2 className="card-title">👤 Mi Perfil</h2>
+          <h2 className="card-title">Mi Perfil</h2>
           <button onClick={onLogout} className="btn btn-secondary">
-            🚪 Cerrar Sesión
+            Cerrar Sesión
           </button>
         </div>
         
@@ -194,7 +194,7 @@ export default function Perfil({ user, onLogout }) {
             onClick={() => setShowDeleteConfirm(true)}
             className="btn btn-danger"
           >
-            🗑️ Eliminar Cuenta
+            Eliminar Cuenta
           </button>
         ) : (
           <div className="delete-confirm">
@@ -223,7 +223,7 @@ export default function Perfil({ user, onLogout }) {
       {misSanciones.length > 0 && (
         <div className="sanctions-container">
           <div className="sanctions-header">
-            <h2 className="sanctions-title">⚠️ Sanciones</h2>
+            <h2 className="sanctions-title">Sanciones</h2>
           </div>
           <div className="sanctions-list">
             {misSanciones.map((sancion, idx) => {
@@ -233,10 +233,10 @@ export default function Perfil({ user, onLogout }) {
               return (
                 <div key={idx} className="sanction-item">
                   <span className={`sanction-badge ${activa ? 'active' : 'finished'}`}>
-                    {activa ? '🚫 ACTIVA' : '✓ Finalizada'}
+                    {activa ? 'ACTIVA' : 'Finalizada'}
                   </span>
                   <p className="sanction-text">
-                    📅 Desde: <strong>{sancion.fecha_inicio}</strong> hasta{" "}
+                    Desde: <strong>{sancion.fecha_inicio}</strong> hasta{" "}
                     <strong>{sancion.fecha_fin}</strong>
                   </p>
                 </div>
@@ -248,12 +248,12 @@ export default function Perfil({ user, onLogout }) {
 
       {/* MIS RESERVAS */}
       <div className="card">
-        <h2 className="card-title">📋 Mis Reservas</h2>
+        <h2 className="card-title">Mis Reservas</h2>
 
         {/* EN USO */}
         <div className="mb-6">
           <h3 className="card-title" style={{ fontSize: '18px', color: '#f59e0b' }}>
-            🟡 En Uso Ahora ({enUso.length})
+            En Uso Ahora ({enUso.length})
           </h3>
 
           {enUso.length === 0 ? (
@@ -286,7 +286,7 @@ export default function Perfil({ user, onLogout }) {
                             fontWeight: 'bold'
                           }}
                         >
-                          ⏱️ EN USO
+                          EN USO
                         </span>
                       </td>
                     </tr>
@@ -302,7 +302,7 @@ export default function Perfil({ user, onLogout }) {
         {/* ACTIVAS */}
         <div className="mb-6">
           <h3 className="card-title" style={{ fontSize: '18px', color: '#059669' }}>
-            🟢 Activas ({activas.length})
+            Activas ({activas.length})
           </h3>
 
           {activas.length === 0 ? (
@@ -348,7 +348,7 @@ export default function Perfil({ user, onLogout }) {
         {/* UTILIZADAS */}
         <div>
           <h3 className="card-title" style={{ fontSize: '18px', color: '#2563eb' }}>
-            🔵 Utilizadas ({utilizadas.length})
+            Utilizadas ({utilizadas.length})
           </h3>
 
           {utilizadas.length === 0 ? (
@@ -395,7 +395,7 @@ export default function Perfil({ user, onLogout }) {
         {/* CANCELADAS */}
         <div>
           <h3 className="card-title" style={{ fontSize: '18px', color: '#dc2626' }}>
-            🔴 Canceladas ({canceladas.length})
+            Canceladas ({canceladas.length})
           </h3>
 
           {canceladas.length === 0 ? (
