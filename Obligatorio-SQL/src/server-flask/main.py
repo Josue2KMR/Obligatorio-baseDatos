@@ -28,7 +28,7 @@ def validar_correo_ucu(email):
 @app.route('/api/login', methods=['POST'])
 def login():
     """
-    Autenticación de usuario con contraseñas hasheadas
+    Autenticación de usuario con contraseñas en texto plano
     """
     try:
         data = request.get_json()
@@ -52,8 +52,8 @@ def login():
                 result = cursor.fetchone()
                 
                 if result:
-                    # Verificar contraseña hasheada
-                    if check_password_hash(result['contraseña'], contraseña):
+                    # Verificar contraseña en texto plano
+                    if result['contraseña'] == contraseña:
                         return jsonify({"success": True, "data": {"correo": result['correo']}}), 200
                 
                 return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
@@ -1516,12 +1516,12 @@ if __name__ == '__main__':
     if init_db():
         print(f"\n✅ Base de datos inicializada correctamente")
         test_connection()
-        print(f"\n🌐 Servidor corriendo en: http://localhost:{Config.PORT}")
+        print(f"\n🌐 Servidor corriendo en: http://0.0.0.0:{Config.PORT}")
         print(f"🔧 Modo debug: {Config.DEBUG}")
         print(f"📊 Health check: http://localhost:{Config.PORT}/api/health")
         print("="*50 + "\n")
         
-        app.run(debug=Config.DEBUG, port=Config.PORT)
+        app.run(host='0.0.0.0', debug=Config.DEBUG, port=Config.PORT)
     else:
         print("\n❌ No se pudo inicializar la base de datos")
         print("💡 Verifica tu archivo .env y que MySQL esté corriendo")
