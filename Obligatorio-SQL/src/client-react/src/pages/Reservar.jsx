@@ -208,22 +208,23 @@ export default function Reservar({ user }) {
                   <option value="">Elegir Turno</option>
 
                   {turnos.map((turno) => {
-                    // Convertir HH:MM a minutos totales
                     const [h, m] = turno.hora_inicio.split(":").map(Number);
                     const turnoMinutos = h * 60 + m;
 
-                    // Obtener fecha/hora actual
                     const ahora = new Date();
-                    const hoy = ahora.toISOString().split("T")[0];
-
                     const horaNow = ahora.getHours();
                     const minNow = ahora.getMinutes();
                     const nowMinutos = horaNow * 60 + minNow;
 
-                    // ¿Estamos reservando para hoy?
-                    const esHoy = fechaReserva === hoy;
+                    // Fecha local REAL (no UTC)
+                    const hoyLocal = new Date();
+                    const yyyy = hoyLocal.getFullYear();
+                    const mm = String(hoyLocal.getMonth() + 1).padStart(2, "0");
+                    const dd = String(hoyLocal.getDate()).padStart(2, "0");
+                    const fechaHoy = `${yyyy}-${mm}-${dd}`;
 
-                    // Si es hoy y el turno empezó antes que la hora actual → DESHABILITAR
+                    const esHoy = fechaReserva === fechaHoy;
+
                     const disabled = esHoy && turnoMinutos <= nowMinutos;
 
                     return (
