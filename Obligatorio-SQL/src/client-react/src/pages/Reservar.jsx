@@ -9,12 +9,40 @@ export default function Reservar({ user }) {
   const [turnoSeleccionado, setTurnoSeleccionado] = useState("");
   const [salaSeleccionada, setSalaSeleccionada] = useState(null);
   const [message, setMessage] = useState({ type: "", text: "" });
+  const [turnosOcupados, setTurnosOcupados] = useState([]);
 
   const hoy = (() => {
     const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(
+      2,
+      "0"
+    )}-${String(d.getDate()).padStart(2, "0")}`;
   })();
 
+  // 🔥 Cargar turnos ocupados para una sala y fecha
+  const cargarTurnosOcupados = async (fecha, sala) => {
+    if (!sala || !fecha) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:5000/api/reservas?fecha=${fecha}&nombre_sala=${sala.nombre_sala}&edificio=${sala.edificio}`
+      );
+      const data = await res.json();
+
+      if (data.success) {
+        const ocupados = data.data
+          .filter((r) => r.estado === "activa")
+          .map((r) => Number(r.id_turno)); // ahora sí existe id_turno
+
+        setTurnosOcupados(ocupados);
+      } else {
+        setTurnosOcupados([]);
+      }
+    } catch (err) {
+      console.error("Error cargando turnos ocupados:", err);
+      setTurnosOcupados([]);
+    }
+  };
 
   useEffect(() => {
     loadData();
@@ -31,7 +59,7 @@ export default function Reservar({ user }) {
       const [participanteRes, salasRes, turnosRes] = await Promise.all([
         fetch(`http://localhost:5000/api/participantes?email=${user.correo}`),
         fetch("http://localhost:5000/api/salas"),
-        fetch("http://localhost:5000/api/turnos")
+        fetch("http://localhost:5000/api/turnos"),
       ]);
 
       const participanteData = await participanteRes.json();
@@ -41,18 +69,20 @@ export default function Reservar({ user }) {
       if (participanteData.success) setParticipante(participanteData.data);
       if (salasData.success) setSalasDisponibles(salasData.data);
       if (turnosData.success) setTurnos(turnosData.data);
-
     } catch (err) {
       console.error("Error:", err);
-      setMessage({ type: "error", text: "❌ Error al cargar datos iniciales." });
+      setMessage({
+        type: "error",
+        text: "❌ Error al cargar datos iniciales.",
+      });
     } finally {
       setLoading(false);
     }
   };
 
   const getTurnoInfo = (id) => {
-    const turno = turnos.find(t => t.id_turno === Number(id));
-    return turno ? `${turno.hora_inicio} - ${turno.hora_fin}` : 'N/A';
+    const turno = turnos.find((t) => t.id_turno === Number(id));
+    return turno ? `${turno.hora_inicio} - ${turno.hora_fin}` : "N/A";
   };
 
   const formatearFechaDisplay = (fechaYYYYMMDD) => {
@@ -73,21 +103,27 @@ export default function Reservar({ user }) {
     setMessage({ type: "", text: "" });
 
     if (!participante) {
-      setMessage({ type: "error", text: "❌ No se pudo obtener el participante." });
+      setMessage({
+        type: "error",
+        text: "❌ No se pudo obtener el participante.",
+      });
       return;
     }
 
     if (!salaSeleccionada || !fechaReserva || !turnoSeleccionado) {
-      setMessage({ type: "error", text: "❌ Sala, Fecha y Turno son obligatorios." });
+      setMessage({
+        type: "error",
+        text: "❌ Sala, Fecha y Turno son obligatorios.",
+      });
       return;
     }
 
     const reservaData = {
       nombre_sala: salaSeleccionada.nombre_sala,
       edificio: salaSeleccionada.edificio,
-      fecha: fechaReserva,          
+      fecha: fechaReserva,
       id_turno: Number(turnoSeleccionado),
-      participantes: [participante.ci]
+      participantes: [participante.ci],
     };
 
     try {
@@ -100,16 +136,26 @@ export default function Reservar({ user }) {
       const data = await res.json();
 
       if (data.success) {
-        setMessage({ type: "success", text: `✅ Reserva Exitosa! ID: ${data.id_reserva}` });
-        setSalaSeleccionada(null);
+        setMessage({
+          type: "success",
+          text: `✅ Reserva Exitosa! ID: ${data.id_reserva}`,
+        });
         setTurnoSeleccionado("");
-      } else {
-        setMessage({ type: "error", text: `❌ Fallo en la Reserva: ${data.error}` });
-      }
 
+        // 🔥 Actualizar turnos ocupados para reflejar la nueva reserva
+        cargarTurnosOcupados(fechaReserva, salaSeleccionada);
+      } else {
+        setMessage({
+          type: "error",
+          text: `❌ Fallo en la Reserva: ${data.error}`,
+        });
+      }
     } catch (err) {
       console.error(err);
-      setMessage({ type: "error", text: "❌ Error de conexión con el servidor." });
+      setMessage({
+        type: "error",
+        text: "❌ Error de conexión con el servidor.",
+      });
     }
   };
 
@@ -122,6 +168,7 @@ export default function Reservar({ user }) {
     const dd = String(hoy.getDate()).padStart(2, "0");
     setFechaReserva(`${yyyy}-${mm}-${dd}`);
     setMessage({ type: "", text: "" });
+    setTurnosOcupados([]);
   };
 
   if (loading) {
@@ -137,7 +184,10 @@ export default function Reservar({ user }) {
     <div className="reservas-container">
       <div className="content-wrapper">
         <div className="card">
-          <h1 className="card-title" style={{ fontSize: '28px', marginBottom: '8px' }}>
+          <h1
+            className="card-title"
+            style={{ fontSize: "28px", marginBottom: "8px" }}
+          >
             Reservar Sala de Estudio
           </h1>
           <p className="card-subtitle">
@@ -148,23 +198,34 @@ export default function Reservar({ user }) {
         <form onSubmit={handleReserva} className="card">
           <div className="reservation-form">
             <div className="form-grid">
-              
               {/* SALA */}
               <div className="form-field">
                 <label>Sala</label>
                 <select
                   required
-                  value={salaSeleccionada ? `${salaSeleccionada.nombre_sala}|${salaSeleccionada.edificio}` : ""}
+                  value={
+                    salaSeleccionada
+                      ? `${salaSeleccionada.nombre_sala}|${salaSeleccionada.edificio}`
+                      : ""
+                  }
                   onChange={(e) => {
                     if (!e.target.value) {
                       setSalaSeleccionada(null);
+                      setTurnosOcupados([]);
                       return;
                     }
+
                     const [nombre_sala, edificio] = e.target.value.split("|");
                     const sala = salasDisponibles.find(
-                      s => s.nombre_sala === nombre_sala && s.edificio === edificio
+                      (s) =>
+                        s.nombre_sala === nombre_sala && s.edificio === edificio
                     );
+
                     setSalaSeleccionada(sala);
+
+                    if (sala && fechaReserva) {
+                      cargarTurnosOcupados(fechaReserva, sala);
+                    }
                   }}
                 >
                   <option value="">Elegir Sala</option>
@@ -173,7 +234,8 @@ export default function Reservar({ user }) {
                       key={`${sala.nombre_sala}-${sala.edificio}`}
                       value={`${sala.nombre_sala}|${sala.edificio}`}
                     >
-                      {sala.nombre_sala} ({sala.edificio}) - Cap: {sala.capacidad}
+                      {sala.nombre_sala} ({sala.edificio}) - Cap:{" "}
+                      {sala.capacidad}
                     </option>
                   ))}
                 </select>
@@ -186,14 +248,20 @@ export default function Reservar({ user }) {
                   required
                   type="date"
                   value={fechaReserva}
-                  min={hoy}     
+                  min={hoy}
                   onChange={(e) => {
-                    setFechaReserva(e.target.value);
+                    const nuevaFecha = e.target.value;
+                    setFechaReserva(nuevaFecha);
                     setTurnoSeleccionado("");
+
+                    if (salaSeleccionada) {
+                      cargarTurnosOcupados(nuevaFecha, salaSeleccionada);
+                    } else {
+                      setTurnosOcupados([]);
+                    }
                   }}
                   className="w-full p-2 border rounded"
                 />
-
               </div>
 
               {/* TURNO */}
@@ -204,6 +272,7 @@ export default function Reservar({ user }) {
                   value={turnoSeleccionado}
                   onChange={(e) => setTurnoSeleccionado(e.target.value)}
                   className="w-full p-2 border rounded"
+                  disabled={!salaSeleccionada || !fechaReserva}
                 >
                   <option value="">Elegir Turno</option>
 
@@ -212,20 +281,24 @@ export default function Reservar({ user }) {
                     const turnoMinutos = h * 60 + m;
 
                     const ahora = new Date();
-                    const horaNow = ahora.getHours();
-                    const minNow = ahora.getMinutes();
-                    const nowMinutos = horaNow * 60 + minNow;
+                    const nowMinutos =
+                      ahora.getHours() * 60 + ahora.getMinutes();
 
-                    // Fecha local REAL (no UTC)
                     const hoyLocal = new Date();
                     const yyyy = hoyLocal.getFullYear();
-                    const mm = String(hoyLocal.getMonth() + 1).padStart(2, "0");
+                    const mm = String(hoyLocal.getMonth() + 1).padStart(
+                      2,
+                      "0"
+                    );
                     const dd = String(hoyLocal.getDate()).padStart(2, "0");
                     const fechaHoy = `${yyyy}-${mm}-${dd}`;
 
                     const esHoy = fechaReserva === fechaHoy;
 
-                    const disabled = esHoy && turnoMinutos <= nowMinutos;
+                    const pasado = esHoy && turnoMinutos <= nowMinutos;
+                    const ocupado = turnosOcupados.includes(turno.id_turno);
+
+                    const disabled = pasado || ocupado;
 
                     return (
                       <option
@@ -235,14 +308,13 @@ export default function Reservar({ user }) {
                         className={disabled ? "text-gray-400" : ""}
                       >
                         {turno.hora_inicio} - {turno.hora_fin}
-                        {disabled ? "  (No disponible)" : ""}
+                        {pasado ? " (No disponible)" : ""}
+                        {ocupado ? " (Ya reservado)" : ""}
                       </option>
                     );
                   })}
                 </select>
-
               </div>
-
             </div>
 
             {/* RESUMEN */}
@@ -252,28 +324,35 @@ export default function Reservar({ user }) {
                 <div className="summary-content">
                   {salaSeleccionada && (
                     <p>
-                      <strong>🏛️ Sala:</strong> {salaSeleccionada.nombre_sala} ({salaSeleccionada.edificio})
+                      <strong>🏛️ Sala:</strong> {salaSeleccionada.nombre_sala} (
+                      {salaSeleccionada.edificio})
                     </p>
                   )}
                   {fechaReserva && (
                     <p>
-                      <strong>Fecha:</strong> {formatearFechaDisplay(fechaReserva)}
+                      <strong>Fecha:</strong>{" "}
+                      {formatearFechaDisplay(fechaReserva)}
                     </p>
                   )}
                   {turnoSeleccionado && (
                     <p>
-                      <strong>Horario:</strong> {getTurnoInfo(turnoSeleccionado)}
+                      <strong>Horario:</strong>{" "}
+                      {getTurnoInfo(turnoSeleccionado)}
                     </p>
                   )}
                 </div>
               </div>
             )}
 
-         {message.text && (
-          <div className={`alert ${message.type === "success" ? "alert-success" : "alert-error"}`}>
-            {message.text}
-          </div>
-        )}
+            {message.text && (
+              <div
+                className={`alert ${
+                  message.type === "success" ? "alert-success" : "alert-error"
+                }`}
+              >
+                {message.text}
+              </div>
+            )}
 
             {/* BOTONES */}
             <div className="divider"></div>
@@ -288,7 +367,9 @@ export default function Reservar({ user }) {
               <button
                 type="submit"
                 className="btn btn-primary "
-                disabled={!salaSeleccionada || !fechaReserva || !turnoSeleccionado}
+                disabled={
+                  !salaSeleccionada || !fechaReserva || !turnoSeleccionado
+                }
               >
                 Confirmar Reserva
               </button>

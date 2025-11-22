@@ -5,7 +5,6 @@ from database import init_db, get_db_connection, test_connection
 from config import Config
 from datetime import datetime, timedelta
 from werkzeug.security import generate_password_hash, check_password_hash
-import re
 
 app = Flask(__name__)
 app.config.from_object(Config)
@@ -14,50 +13,34 @@ CORS(app)  # CORS configurado globalmente
 db_initialized = False
 
 
-def validar_correo_ucu(email):
-    """
-    Valida que el correo pertenezca al dominio UCU
-    Dominios permitidos: @correo.ucu.edu.uy, @correo.ucu.uy, @ucu.edu.uy
-    """
-    patron = r'^[a-zA-Z0-9._%+-]+@(correo\.ucu\.edu\.uy|correo\.ucu\.uy)$'
-    return re.match(patron, email) is not None
-
-
 # ==================== LOGIN ====================
 
 @app.route('/api/login', methods=['POST'])
 def login():
     """
-    Autenticación de usuario con contraseñas en texto plano
+    Autenticación de usuario
     """
     try:
         data = request.get_json()
         correo = data.get('correo')
         contraseña = data.get('contraseña')
-        
+
         if not correo or not contraseña:
             return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
-        
-        # Validar dominio UCU
-        if not validar_correo_ucu(correo):
-            return jsonify({
-                "success": False, 
-                "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
-            }), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 query = "SELECT correo, contraseña FROM login WHERE correo = %s"
                 cursor.execute(query, (correo,))
                 result = cursor.fetchone()
-                
+
                 if result:
-                    # Verificar contraseña en texto plano
+                    # TODO: Implementar check_password_hash cuando se migre a contraseñas hasheadas
                     if result['contraseña'] == contraseña:
                         return jsonify({"success": True, "data": {"correo": result['correo']}}), 200
-                
+
                 return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
-                
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -65,7 +48,7 @@ def login():
 @app.route('/api/login/register', methods=['POST'])
 def register_login():
     """
-    Registro de credenciales con contraseñas hasheadas
+    Registro de credenciales
     """
     try:
         data = request.get_json()
@@ -75,25 +58,14 @@ def register_login():
         if not correo or not contraseña:
             return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
 
-        # Validar dominio UCU
-        if not validar_correo_ucu(correo):
-            return jsonify({
-                "success": False, 
-                "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
-            }), 400
-
-        # Validar longitud mínima
-        if len(contraseña) < 6:
-            return jsonify({"success": False, "error": "La contraseña debe tener al menos 6 caracteres"}), 400
-
-        # Hashear contraseña
-        contraseña_hash = generate_password_hash(contraseña, method='pbkdf2:sha256')
+        # TODO: Implementar generate_password_hash para seguridad
+        # contraseña_hash = generate_password_hash(contraseña)
 
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "INSERT INTO login (correo, contraseña) VALUES (%s, %s)"
                 try:
-                    cursor.execute(query, (correo, contraseña_hash))
+                    cursor.execute(query, (correo, contraseña))
                     cnx.commit()
                     return jsonify({"success": True, "message": "Credenciales creadas"}), 201
                 except Error as err:
@@ -103,7 +75,7 @@ def register_login():
                         return jsonify({"success": False, "error": "El participante no existe (violación FK)"}), 400
                     else:
                         return jsonify({"success": False, "error": str(err)}), 500
-                        
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -118,7 +90,7 @@ def get_participantes():
     try:
         ci = request.args.get('ci')
         email = request.args.get('email')
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 if ci:
@@ -130,7 +102,7 @@ def get_participantes():
                         return jsonify({"success": True, "data": result}), 200
                     else:
                         return jsonify({"success": False, "error": "Participante no encontrado"}), 404
-                
+
                 elif email:
                     # Búsqueda por email
                     query = "SELECT * FROM participante WHERE email = %s"
@@ -140,14 +112,14 @@ def get_participantes():
                         return jsonify({"success": True, "data": result}), 200
                     else:
                         return jsonify({"success": False, "error": "Correo no registrado"}), 404
-                
+
                 else:
                     # Lista todos
                     query = "SELECT * FROM participante"
                     cursor.execute(query)
                     results = cursor.fetchall()
                     return jsonify({"success": True, "data": results, "count": len(results)}), 200
-                    
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -159,18 +131,11 @@ def create_participante():
     """
     try:
         data = request.get_json()
-        
+
         # Validar campos requeridos
         if not all(key in data for key in ['ci', 'nombre', 'apellido', 'email']):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
-        
-        # Validar dominio UCU
-        if not validar_correo_ucu(data['email']):
-            return jsonify({
-        "success": False, 
-        "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
-    }), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 # Verificar si ya existe
@@ -178,13 +143,13 @@ def create_participante():
                               (data['ci'], data['email']))
                 if cursor.fetchone():
                     return jsonify({"success": False, "error": "CI o email ya registrado"}), 409
-                
+
                 # Insertar
                 query = "INSERT INTO participante (ci, nombre, apellido, email) VALUES (%s, %s, %s, %s)"
                 cursor.execute(query, (data['ci'], data['nombre'], data['apellido'], data['email']))
                 cnx.commit()
                 return jsonify({"success": True, "message": "Participante creado"}), 201
-                
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -196,31 +161,24 @@ def update_participante(ci):
     """
     try:
         data = request.get_json()
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 # Verificar existencia
                 cursor.execute("SELECT ci FROM participante WHERE ci = %s", (ci,))
                 if not cursor.fetchone():
                     return jsonify({"success": False, "error": "Participante no encontrado"}), 404
-                
-                # Validar correo UCU si se proporciona
-                if 'email' in data and not validar_correo_ucu(data['email']):
-                    return jsonify({
-        "success": False, 
-        "error": "Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @ucu.edu.uy)"
-    }), 400
-                
+
                 # Actualizar
                 query = "UPDATE participante SET nombre = %s, apellido = %s, email = %s WHERE ci = %s"
                 cursor.execute(query, (data['nombre'], data['apellido'], data['email'], ci))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Participante actualizado"}), 200
                 else:
                     return jsonify({"success": False, "error": "No se realizaron cambios"}), 400
-                    
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -237,20 +195,20 @@ def delete_participante(ci):
                 cursor.execute("SELECT ci FROM participante WHERE ci = %s", (ci,))
                 if not cursor.fetchone():
                     return jsonify({"success": False, "error": "Participante no encontrado"}), 404
-                
+
                 # TODO: Implementar soft delete
                 # query = "UPDATE participante SET estado = 'inactivo' WHERE ci = %s"
                 query = "DELETE FROM participante WHERE ci = %s"
                 cursor.execute(query, (ci,))
                 cnx.commit()
                 return jsonify({"success": True, "message": "Participante eliminado"}), 200
-                
+
     except Error as err:
         # Manejar error de FK
         if hasattr(err, 'errno') and err.errno in (1451, 1452):
             return jsonify({"success": False, "error": "No se puede eliminar: existen registros relacionados"}), 400
         return jsonify({"success": False, "error": str(err)}), 500
-    
+
     # ==================== ROL DE PARTICIPANTE ====================
 
 @app.route('/api/participante/<ci>/rol')
@@ -270,16 +228,16 @@ def get_participante_rol(ci):
                 """
                 cursor.execute(query, (ci,))
                 result = cursor.fetchone()
-                
+
                 if result:
                     return jsonify({"success": True, "data": result}), 200
                 else:
                     # Si no tiene rol asignado, se considera estudiante de grado
                     return jsonify({"success": True, "data": {"rol": "estudiante", "tipo": "grado"}}), 200
-                    
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
-    
+
 @app.route('/api/participante/<ci>/cascade', methods=['DELETE'])
 def delete_participante_cascade(ci):
     """
@@ -406,7 +364,7 @@ def get_sala(nombre_sala, edificio):
                 query = "SELECT * FROM sala WHERE nombre_sala = %s AND edificio = %s"
                 cursor.execute(query, (nombre_sala, edificio))
                 result = cursor.fetchone()
-                
+
                 if result:
                     return jsonify({"success": True, "data": result}), 200
                 else:
@@ -420,10 +378,10 @@ def create_sala():
     """Crea una nueva sala"""
     try:
         data = request.get_json()
-        
+
         if not all(key in data for key in ['nombre_sala', 'edificio', 'capacidad', 'tipo_sala']):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "INSERT INTO sala (nombre_sala, edificio, capacidad, tipo_sala) VALUES (%s, %s, %s, %s)"
@@ -446,7 +404,7 @@ def update_sala(nombre_sala, edificio):
                 query = "UPDATE sala SET capacidad = %s, tipo_sala = %s WHERE nombre_sala = %s AND edificio = %s"
                 cursor.execute(query, (data['capacidad'], data['tipo_sala'], nombre_sala, edificio))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Sala actualizada"}), 200
                 else:
@@ -464,7 +422,7 @@ def delete_sala(nombre_sala, edificio):
                 query = "DELETE FROM sala WHERE nombre_sala = %s AND edificio = %s"
                 cursor.execute(query, (nombre_sala, edificio))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Sala eliminada"}), 200
                 else:
@@ -501,6 +459,75 @@ def get_turnos():
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
+
+
+# ==================== RESERVAS ====================
+@app.route('/api/reservas')
+def get_reservas():
+    """
+    Lista reservas con filtros opcionales.
+    """
+    try:
+        fecha = request.args.get('fecha')
+        nombre_sala = request.args.get('nombre_sala')
+        edificio = request.args.get('edificio')
+        ci_participante = request.args.get('ci_participante')
+        estado = request.args.get('estado')
+
+        with get_db_connection() as cnx:
+            with cnx.cursor(dictionary=True) as cursor:
+
+                query = """
+SELECT 
+    r.id_reserva,
+    r.id_turno,
+    DATE_FORMAT(r.fecha, '%Y-%m-%d') AS fecha,
+    r.estado,
+    r.nombre_sala,
+    r.edificio,
+    s.capacidad,
+    s.tipo_sala,
+    DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora_inicio,
+    DATE_FORMAT(t.hora_fin, '%H:%i') AS hora_fin
+FROM reserva r
+JOIN sala s ON s.nombre_sala = r.nombre_sala AND s.edificio = r.edificio
+JOIN turno t ON t.id_turno = r.id_turno
+"""
+
+
+                conditions = []
+                params = []
+
+                if fecha:
+                    conditions.append("r.fecha = %s")
+                    params.append(fecha)
+                if nombre_sala:
+                    conditions.append("r.nombre_sala = %s")
+                    params.append(nombre_sala)
+                if edificio:
+                    conditions.append("r.edificio = %s")
+                    params.append(edificio)
+                if estado:
+                    conditions.append("r.estado = %s")
+                    params.append(estado)
+
+                if ci_participante:
+                    query += " JOIN reserva_participante rp ON rp.id_reserva = r.id_reserva"
+                    conditions.append("rp.ci_participante = %s")
+                    params.append(ci_participante)
+
+                if conditions:
+                    query += " WHERE " + " AND ".join(conditions)
+
+                query += " ORDER BY r.fecha DESC, t.hora_inicio ASC"
+
+                cursor.execute(query, tuple(params))
+                results = cursor.fetchall()
+
+                return jsonify({"success": True, "data": results, "count": len(results)}), 200
+
+    except Error as err:
+        return jsonify({"success": False, "error": f"Error SQL en get_reservas: {str(err)}"}), 500
 
 
 # ==================== VALIDAR RESERVA ====================
@@ -697,13 +724,13 @@ def cancelar_reserva(id_reserva):
     try:
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
-                
+
                 cursor.execute("""
                     SELECT id_reserva 
                     FROM reserva 
                     WHERE id_reserva=%s AND estado='activa'
                 """, (id_reserva,))
-                
+
                 if not cursor.fetchone():
                     return jsonify({"success": False, "error": "Reserva no encontrada o ya cancelada"}), 404
 
@@ -712,7 +739,7 @@ def cancelar_reserva(id_reserva):
                     SET estado='cancelada' 
                     WHERE id_reserva=%s
                 """, (id_reserva,))
-                
+
                 cnx.commit()
                 return jsonify({"success": True, "message": "Reserva cancelada"}), 200
 
@@ -725,10 +752,10 @@ def marcar_asistencia(id_reserva):
     """Marca la asistencia de un participante"""
     try:
         data = request.get_json()
-        
+
         if 'asistencia' not in data or 'ci_participante' not in data:
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = """
@@ -738,7 +765,7 @@ def marcar_asistencia(id_reserva):
                 """
                 cursor.execute(query, (data['asistencia'], id_reserva, data['ci_participante']))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Asistencia marcada"}), 200
                 else:
@@ -756,7 +783,7 @@ def marcar_sin_asistencia(id_reserva):
                 query = "UPDATE reserva SET estado = 'sin asistencia' WHERE id_reserva = %s"
                 cursor.execute(query, (id_reserva,))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Reserva marcada sin asistencia"}), 200
                 else:
@@ -769,13 +796,15 @@ def marcar_sin_asistencia(id_reserva):
 
 @app.route('/api/sanciones')
 def get_sanciones():
+    """Lista todas las sanciones"""
     """Lista todas las sanciones con datos del participante"""
     try:
         ci = request.args.get('ci_participante')
         activas = request.args.get('activas')
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
+                query = "SELECT * FROM sancion_participante WHERE 1=1"
                 query = """
                 SELECT 
                     s.*,
@@ -787,16 +816,19 @@ def get_sanciones():
                 WHERE 1=1
                 """
                 params = []
-                
+
                 if ci:
+                    query += " AND ci_participante = %s"
                     query += " AND s.ci_participante = %s"
                     params.append(ci)
-                
+
                 if activas == 'true':
+                    query += " AND CURDATE() BETWEEN fecha_inicio AND fecha_fin"
                     query += " AND CURDATE() BETWEEN s.fecha_inicio AND s.fecha_fin"
-                
+
+                query += " ORDER BY fecha_inicio DESC"
                 query += " ORDER BY s.fecha_inicio DESC"
-                
+
                 cursor.execute(query, tuple(params))
                 results = cursor.fetchall()
                 return jsonify({"success": True, "data": results}), 200
@@ -809,10 +841,10 @@ def create_sancion():
     """Crea una nueva sanción"""
     try:
         data = request.get_json()
-        
+
         if not all(key in data for key in ['ci_participante', 'fecha_inicio', 'fecha_fin']):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = """
@@ -837,7 +869,7 @@ def delete_sancion(ci, fecha_inicio):
                 query = "DELETE FROM sancion_participante WHERE ci_participante = %s AND fecha_inicio = %s"
                 cursor.execute(query, (ci, fecha_inicio))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Sanción eliminada"}), 200
                 else:
@@ -1132,7 +1164,7 @@ def participantes_mas_activos():
     """
     try:
         limit = request.args.get('limit', 10, type=int)
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 query = """
@@ -1192,8 +1224,8 @@ def distribucion_por_dia():
                 return jsonify({"success": True, "data": results}), 200
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
-    
-    
+
+
 # ==================== ADMINISTRACIÓN - ROLES ====================
 
 @app.route('/api/admin/verificar', methods=['GET'])
@@ -1203,10 +1235,10 @@ def verificar_admin():
     """
     try:
         correo = request.args.get('correo')
-        
+
         if not correo:
             return jsonify({"success": False, "error": "Correo requerido"}), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 # Buscar si el participante tiene rol admin
@@ -1219,10 +1251,10 @@ def verificar_admin():
                 """
                 cursor.execute(query, (correo,))
                 result = cursor.fetchone()
-                
+
                 is_admin = result is not None
                 return jsonify({"success": True, "is_admin": is_admin}), 200
-                
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -1257,10 +1289,10 @@ def admin_crear_sala():
     """Crea una nueva sala (solo admin)"""
     try:
         data = request.get_json()
-        
+
         if not all(key in data for key in ['nombre_sala', 'edificio', 'capacidad', 'tipo_sala']):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 # Verificar que el edificio existe
@@ -1268,7 +1300,7 @@ def admin_crear_sala():
                              (data['edificio'],))
                 if not cursor.fetchone():
                     return jsonify({"success": False, "error": "Edificio no existe"}), 400
-                
+
                 # Crear sala
                 query = """
                 INSERT INTO sala (nombre_sala, edificio, capacidad, tipo_sala) 
@@ -1282,7 +1314,7 @@ def admin_crear_sala():
                 ))
                 cnx.commit()
                 return jsonify({"success": True, "message": "Sala creada exitosamente"}), 201
-                
+
     except Error as err:
         if hasattr(err, 'errno') and err.errno == 1062:
             return jsonify({"success": False, "error": "La sala ya existe"}), 409
@@ -1302,36 +1334,36 @@ def admin_eliminar_sala(nombre_sala, edificio):
                         SELECT nombre_sala FROM sala 
                         WHERE nombre_sala = %s AND edificio = %s
                     """, (nombre_sala, edificio))
-                    
+
                     if not cursor.fetchone():
                         return jsonify({"success": False, "error": "Sala no encontrada"}), 404
-                    
+
                     # Eliminar participantes de reservas asociadas
                     cursor.execute("""
                         DELETE rp FROM reserva_participante rp
                         JOIN reserva r ON rp.id_reserva = r.id_reserva
                         WHERE r.nombre_sala = %s AND r.edificio = %s
                     """, (nombre_sala, edificio))
-                    
+
                     # Eliminar reservas
                     cursor.execute("""
                         DELETE FROM reserva 
                         WHERE nombre_sala = %s AND edificio = %s
                     """, (nombre_sala, edificio))
-                    
+
                     # Eliminar sala
                     cursor.execute("""
                         DELETE FROM sala 
                         WHERE nombre_sala = %s AND edificio = %s
                     """, (nombre_sala, edificio))
-                    
+
                     cnx.commit()
                     return jsonify({"success": True, "message": "Sala eliminada"}), 200
-                    
+
             except Error:
                 cnx.rollback()
                 raise
-                
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -1381,25 +1413,25 @@ def admin_crear_sancion():
     """Crea una sanción para un participante"""
     try:
         data = request.get_json()
-        
+
         if not all(key in data for key in ['ci_participante', 'dias']):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
-        
+
         dias = int(data['dias'])
         if dias <= 0:
             return jsonify({"success": False, "error": "Los días deben ser positivos"}), 400
-        
+
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 # Verificar que el participante existe
                 cursor.execute("SELECT ci FROM participante WHERE ci = %s", (data['ci_participante'],))
                 if not cursor.fetchone():
                     return jsonify({"success": False, "error": "Participante no encontrado"}), 404
-                
+
                 # Calcular fechas
                 fecha_inicio = datetime.now().date()
                 fecha_fin = fecha_inicio + timedelta(days=dias)
-                
+
                 # Crear sanción
                 query = """
                 INSERT INTO sancion_participante (ci_participante, fecha_inicio, fecha_fin)
@@ -1407,14 +1439,14 @@ def admin_crear_sancion():
                 """
                 cursor.execute(query, (data['ci_participante'], fecha_inicio, fecha_fin))
                 cnx.commit()
-                
+
                 return jsonify({
                     "success": True, 
                     "message": f"Sanción aplicada por {dias} días",
                     "fecha_inicio": str(fecha_inicio),
                     "fecha_fin": str(fecha_fin)
                 }), 201
-                
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -1431,12 +1463,12 @@ def admin_eliminar_sancion(ci, fecha_inicio):
                 """
                 cursor.execute(query, (ci, fecha_inicio))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Sanción eliminada"}), 200
                 else:
                     return jsonify({"success": False, "error": "Sanción no encontrada"}), 404
-                    
+
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -1470,14 +1502,14 @@ def health_check():
             with cnx.cursor() as cursor:
                 cursor.execute("SELECT 1")
                 cursor.fetchone()
-        
+
         return jsonify({
             "status": "healthy",
             "database": "connected",
             "message": "Servicio funcionando correctamente",
             "api_version": "1.0"
         }), 200
-    
+
     except Exception as e:
         return jsonify({
             "status": "unhealthy",
@@ -1512,17 +1544,16 @@ if __name__ == '__main__':
     print("\n" + "="*50)
     print("🚀 Iniciando servidor Flask")
     print("="*50)
-    
+
     if init_db():
         print(f"\n✅ Base de datos inicializada correctamente")
         test_connection()
-        print(f"\n🌐 Servidor corriendo en: http://0.0.0.0:{Config.PORT}")
+        print(f"\n🌐 Servidor corriendo en: http://localhost:{Config.PORT}")
         print(f"🔧 Modo debug: {Config.DEBUG}")
         print(f"📊 Health check: http://localhost:{Config.PORT}/api/health")
         print("="*50 + "\n")
-        
-        app.run(host='0.0.0.0', debug=Config.DEBUG, port=Config.PORT)
+
+        app.run(debug=Config.DEBUG, port=Config.PORT)
     else:
         print("\n❌ No se pudo inicializar la base de datos")
         print("💡 Verifica tu archivo .env y que MySQL esté corriendo")
-        print("="*50 + "\n")
