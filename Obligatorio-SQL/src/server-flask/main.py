@@ -503,72 +503,160 @@ def get_turnos():
 
 
 
-# ==================== RESERVAS ====================
-@app.route('/api/reservas')
-def get_reservas():
-    """
-    Lista reservas con filtros opcionales.
-    """
+# ==================== CREAR RESERVA ====================
+@app.route('/api/reserva', methods=['POST'])
+def create_reserva():
     try:
-        fecha = request.args.get('fecha')
-        nombre_sala = request.args.get('nombre_sala')
-        edificio = request.args.get('edificio')
-        ci_participante = request.args.get('ci_participante')
-        estado = request.args.get('estado')
+        data = request.get_json()
+        participantes = data.get('participantes', [])
 
+        if not participantes:
+            return jsonify({"success": False, "error": "Debe incluir al menos un participante"}), 400
+
+        nombre_sala = data.get('nombre_sala')
+        edificio = data.get('edificio')
+        fecha = data.get('fecha')
+        id_turno = data.get('id_turno')
+
+        if not all([nombre_sala, edificio, fecha, id_turno]):
+            return jsonify({"success": False, "error": "Faltan datos requeridos"}), 400
+
+        # --------------------- VALIDAR TURNO PASADO ---------------------
+        hoy = datetime.now().date().strftime("%Y-%m-%d")
+
+        if fecha == hoy:
+            # Hora actual en minutos
+            ahora = datetime.now().time()
+            min_actual = ahora.hour * 60 + ahora.minute
+
+            with get_db_connection() as cnx:
+                with cnx.cursor(dictionary=True) as cursor:
+                    cursor.execute("""
+                        SELECT TIME_FORMAT(hora_inicio, '%H:%i') AS hora_inicio
+                        FROM turno
+                        WHERE id_turno = %s
+                    """, (id_turno,))
+
+                    turno_data = cursor.fetchone()
+                    if turno_data:
+                        h, m = map(int, turno_data['hora_inicio'].split(":"))
+                        turno_min = h * 60 + m
+
+                        if turno_min <= min_actual:
+                            return jsonify({
+                                "success": False,
+                                "error": "No puedes reservar un turno que ya pasó"
+                            }), 400
+
+        # --------------------- Validar disponibilidad ---------------------
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
-                
-                query = """
-SELECT 
-    r.id_reserva,
-    DATE_FORMAT(r.fecha, '%Y-%m-%d') AS fecha,
-    r.estado,
-    r.nombre_sala,
-    r.edificio,
-    s.capacidad,
-    s.tipo_sala,
-    DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora_inicio,
-    DATE_FORMAT(t.hora_fin, '%H:%i') AS hora_fin
-FROM reserva r
-JOIN sala s ON s.nombre_sala = r.nombre_sala AND s.edificio = r.edificio
-JOIN turno t ON t.id_turno = r.id_turno
-"""
 
+                cursor.execute("""
+                    SELECT id_reserva FROM reserva
+                    WHERE nombre_sala = %s AND edificio = %s AND fecha = %s 
+                    AND id_turno = %s AND estado = 'activa'
+                """, (nombre_sala, edificio, fecha, id_turno))
 
-                conditions = []
-                params = []
+                if cursor.fetchone():
+                    return jsonify({"success": False, "error": "La sala ya está ocupada en este turno"}), 400
 
-                if fecha:
-                    conditions.append("r.fecha = %s")
-                    params.append(fecha)
-                if nombre_sala:
-                    conditions.append("r.nombre_sala = %s")
-                    params.append(nombre_sala)
-                if edificio:
-                    conditions.append("r.edificio = %s")
-                    params.append(edificio)
-                if estado:
-                    conditions.append("r.estado = %s")
-                    params.append(estado)
+                cursor.execute("""
+                    SELECT tipo_sala FROM sala 
+                    WHERE nombre_sala = %s AND edificio = %s
+                """, (nombre_sala, edificio))
 
-                if ci_participante:
-                    query += " JOIN reserva_participante rp ON rp.id_reserva = r.id_reserva"
-                    conditions.append("rp.ci_participante = %s")
-                    params.append(ci_participante)
+                sala_info = cursor.fetchone()
+                if not sala_info:
+                    return jsonify({"success": False, "error": "Sala no encontrada"}), 404
 
-                if conditions:
-                    query += " WHERE " + " AND ".join(conditions)
+                tipo_sala = sala_info['tipo_sala']
 
-                query += " ORDER BY r.fecha DESC, t.hora_inicio ASC"
+        # --------------------- Validaciones por participante ---------------------
+        for ci in participantes:
+            with get_db_connection() as cnx_inner:
+                with cnx_inner.cursor(dictionary=True) as cursor_inner:
 
-                cursor.execute(query, tuple(params))
-                results = cursor.fetchall()
+                    cursor_inner.execute("""
+                        SELECT COUNT(*) AS count 
+                        FROM reserva r
+                        JOIN reserva_participante rp ON r.id_reserva = rp.id_reserva
+                        WHERE rp.ci_participante = %s AND r.fecha = %s AND r.estado = 'activa'
+                    """, (ci, fecha))
+                    if cursor_inner.fetchone()['count'] >= 2:
+                        return jsonify({"success": False, "error": f"{ci} superó límite diario"}), 400
 
-                return jsonify({"success": True, "data": results, "count": len(results)}), 200
+                    cursor_inner.execute("""
+                        SELECT COUNT(*) AS count 
+                        FROM reserva r
+                        JOIN reserva_participante rp ON r.id_reserva = rp.id_reserva
+                        WHERE rp.ci_participante = %s 
+                        AND YEARWEEK(r.fecha,1)=YEARWEEK(%s,1)
+                        AND r.estado='activa'
+                    """, (ci, fecha))
+                    if cursor_inner.fetchone()['count'] >= 3:
+                        return jsonify({"success": False, "error": f"{ci} superó límite semanal"}), 400
 
-    except Error as err:
-        return jsonify({"success": False, "error": f"Error SQL en get_reservas: {str(err)}"}), 500
+                    cursor_inner.execute("""
+                        SELECT COUNT(*) AS count 
+                        FROM sancion_participante
+                        WHERE ci_participante = %s 
+                        AND CURDATE() BETWEEN fecha_inicio AND fecha_fin
+                    """, (ci,))
+                    if cursor_inner.fetchone()['count'] > 0:
+                        return jsonify({"success": False, "error": f"{ci} está sancionado"}), 400
+
+                    if tipo_sala == 'posgrado':
+                        cursor_inner.execute("""
+                            SELECT COUNT(*) AS count
+                            FROM participante_programa_academico ppa
+                            JOIN programa_academico pa ON ppa.nombre_programa = pa.nombre_programa
+                            WHERE ppa.ci_participante = %s AND pa.tipo = 'posgrado'
+                        """, (ci,))
+                        if cursor_inner.fetchone()['count'] == 0:
+                            return jsonify({"success": False, "error": f"{ci} no pertenece a posgrado"}), 400
+
+                    if tipo_sala == 'docente':
+                        cursor_inner.execute("""
+                            SELECT COUNT(*) AS count
+                            FROM participante_programa_academico
+                            WHERE ci_participante = %s AND rol='docente'
+                        """, (ci,))
+                        if cursor_inner.fetchone()['count'] == 0:
+                            return jsonify({"success": False, "error": f"{ci} no es docente"}), 400
+
+        # --------------------- Crear reserva ---------------------
+        with get_db_connection() as cnx:
+            try:
+                cnx.start_transaction()
+                with cnx.cursor() as cursor:
+
+                    cursor.execute("""
+                        INSERT INTO reserva (nombre_sala, edificio, fecha, id_turno, estado)
+                        VALUES (%s, %s, %s, %s, 'activa')
+                    """, (nombre_sala, edificio, fecha, id_turno))
+
+                    id_reserva = cursor.lastrowid
+
+                    cursor_part = """
+                    INSERT INTO reserva_participante 
+                    (ci_participante, id_reserva, fecha_solicitud_reserva, asistencia)
+                    VALUES (%s, %s, NOW(), NULL)
+                    """
+
+                    for ci in participantes:
+                        cursor.execute(cursor_part, (ci, id_reserva))
+
+                    cnx.commit()
+                    return jsonify({"success": True, "id_reserva": id_reserva}), 201
+
+            except Error:
+                cnx.rollback()
+                raise
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 
 
 # ==================== VALIDAR RESERVA ====================
