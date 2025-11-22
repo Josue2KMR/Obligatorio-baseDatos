@@ -1,5 +1,8 @@
+SET NAMES utf8mb4;
+SET CHARACTER SET utf8mb4;
+
 DROP DATABASE IF EXISTS obligatorio;
-CREATE DATABASE obligatorio;
+CREATE DATABASE obligatorio CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 USE obligatorio;
 
 CREATE TABLE participante (
@@ -35,8 +38,8 @@ CREATE TABLE turno(
 
 CREATE TABLE login (
     correo VARCHAR(100) NOT NULL PRIMARY KEY,
-    contraseña VARCHAR(100) NOT NULL,
-    FOREIGN KEY (correo) REFERENCES participante(email)
+    contraseña VARCHAR(255) NOT NULL,
+    FOREIGN KEY (correo) REFERENCES participante(email) ON DELETE CASCADE
 );
 
 

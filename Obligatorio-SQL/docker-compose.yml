@@ -1,0 +1,59 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: obligatorio-mysql
+    restart: unless-stopped
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: obligatorio
+    volumes:
+      - db_data:/var/lib/mysql
+      - ./BaseDatos:/docker-entrypoint-initdb.d:ro
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-prootpassword"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - obligatorio-network
+
+  backend:
+    build:
+      context: ./src/server-flask
+      dockerfile: Dockerfile
+    container_name: obligatorio-backend
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - ./src/server-flask/.env
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./src/server-flask:/app
+    networks:
+      - obligatorio-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./src/client-react
+      dockerfile: Dockerfile
+    container_name: obligatorio-frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - obligatorio-network
+    restart: unless-stopped
+
+volumes:
+  db_data:
+
+networks:
+  obligatorio-network:
+    driver: bridge
