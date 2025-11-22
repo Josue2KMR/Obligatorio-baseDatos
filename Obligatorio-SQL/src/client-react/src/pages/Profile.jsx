@@ -132,23 +132,63 @@ export default function Perfil({ user, onLogout }) {
   }
 
 // Clasificar reservas en activas, utilizadas y canceladas
-  const hoy = new Date().toISOString().split("T")[0];
+  // ---- FECHA Y HORA ACTUAL ----
+  const now = new Date();
 
-  const activas = misReservas.filter((r) => {
-    return (r.fecha >= hoy) && (r.estado !== "finalizada") && (r.estado !== "cancelada") && !estaEnUso(r.fecha, r.hora_inicio, r.hora_fin);
-  });
+  // Fecha HOY en zona local (Uruguay)
+  const yyyy = now.getFullYear();
+  const mm = String(now.getMonth() + 1).padStart(2, "0");
+  const dd = String(now.getDate()).padStart(2, "0");
+  const hoy = `${yyyy}-${mm}-${dd}`;
 
+  const nowMin = now.getHours() * 60 + now.getMinutes();
+
+
+  function turnoHaFinalizado(fecha, horaFin) {
+    const reservaDate = new Date(fecha + "T00:00:00");
+
+    // Si la fecha es anterior a hoy → terminó
+    const hoyDate = new Date(hoy + "T00:00:00");
+    if (reservaDate < hoyDate) return true;
+
+    // Si la fecha es futura → NO terminó
+    if (reservaDate > hoyDate) return false;
+
+    // Si la fecha es hoy → comparar horas
+    const [h, m] = horaFin.split(":").map(Number);
+    const finMin = h * 60 + m;
+    return finMin <= nowMin;
+  }
+
+
+  // ---- CATEGORIZACIÓN CORREGIDA ----
+
+  // Reservas en uso ahora
   const enUso = misReservas.filter((r) => {
-    return (r.estado !== "finalizada") && (r.estado !== "cancelada") && estaEnUso(r.fecha, r.hora_inicio, r.hora_fin);
+    return r.estado !== "cancelada" && estaEnUso(r.fecha, r.hora_inicio, r.hora_fin);
   });
 
+  // Activas: turno no empezó todavía HOY, o es fecha futura, o estaba marcada finalizada pero aún no terminó
+  const activas = misReservas.filter((r) => {
+    if (r.estado === "cancelada") return false;
+    if (estaEnUso(r.fecha, r.hora_inicio, r.hora_fin)) return false;
+    if (!turnoHaFinalizado(r.fecha, r.hora_fin)) return true;
+    return false;
+  });
+
+  // Utilizadas: solo si el turno REALMENTE terminó
   const utilizadas = misReservas.filter((r) => {
-    return ((r.fecha < hoy) || (r.estado === "finalizada") || (r.estado === "sin asistencia")) && (r.estado !== "cancelada");
+    if (r.estado === "cancelada") return false;
+
+    // Si ya terminó → utilizada
+    if (turnoHaFinalizado(r.fecha, r.hora_fin)) return true;
+
+    return false;
   });
 
-  const canceladas = misReservas.filter((r) => {
-    return r.estado === "cancelada";
-  });
+  // Canceladas sin tocar
+  const canceladas = misReservas.filter((r) => r.estado === "cancelada");
+
 
   return (
     <div className="content-wrapper">
