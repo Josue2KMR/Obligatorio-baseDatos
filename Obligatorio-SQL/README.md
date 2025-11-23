@@ -6,8 +6,9 @@ Sistema integral de gestión de reservas de salas de estudio para la Universidad
 
 ## 👥 Integrantes del Equipo
 
-- **Josue Moreira** - Desarrollo Full Stack
-- **[Agregar otros integrantes aquí]**
+- **Josue Merino**
+- **Mateo Cimassi**
+- **Joaquín García**
 
 **Universidad:** Universidad Católica del Uruguay  
 **Curso:** Base de Datos I - Semestre IV  
@@ -517,14 +518,6 @@ docker-compose up -d --build frontend
 
 ---
 
-## 📞 Soporte
-
-Para preguntas o problemas:
-
-1. Revisar la sección de [Solución de Problemas](#-solución-de-problemas)
-2. Ver logs: `docker-compose logs -f`
-3. Contactar al equipo de desarrollo
-
 ---
 
 ## 📄 Licencia
@@ -532,5 +525,3 @@ Para preguntas o problemas:
 Este proyecto es desarrollado como parte del curso de Base de Datos I en la Universidad Católica del Uruguay.
 
 ---
-
-**Desarrollado con ❤️ por el equipo de OneRoom UCU**
