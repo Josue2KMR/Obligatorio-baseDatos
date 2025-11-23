@@ -15,18 +15,22 @@ db_initialized = False
 
 # ==================== LOGIN ====================
 
-@app.route('/api/login', methods=['POST'])
+
+@app.route("/api/login", methods=["POST"])
 def login():
     """
     Autenticación de usuario
     """
     try:
         data = request.get_json()
-        correo = data.get('correo')
-        contraseña = data.get('contraseña')
+        correo = data.get("correo")
+        contraseña = data.get("contraseña")
 
         if not correo or not contraseña:
-            return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
+            return (
+                jsonify({"success": False, "error": "Correo y contraseña requeridos"}),
+                400,
+            )
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
@@ -36,27 +40,38 @@ def login():
 
                 if result:
                     # TODO: Implementar check_password_hash cuando se migre a contraseñas hasheadas
-                    if result['contraseña'] == contraseña:
-                        return jsonify({"success": True, "data": {"correo": result['correo']}}), 200
+                    if result["contraseña"] == contraseña:
+                        return (
+                            jsonify(
+                                {"success": True, "data": {"correo": result["correo"]}}
+                            ),
+                            200,
+                        )
 
-                return jsonify({"success": False, "error": "Credenciales inválidas"}), 401
+                return (
+                    jsonify({"success": False, "error": "Credenciales inválidas"}),
+                    401,
+                )
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/login/register', methods=['POST'])
+@app.route("/api/login/register", methods=["POST"])
 def register_login():
     """
     Registro de credenciales
     """
     try:
         data = request.get_json()
-        correo = data.get('correo')
-        contraseña = data.get('contraseña')
+        correo = data.get("correo")
+        contraseña = data.get("contraseña")
 
         if not correo or not contraseña:
-            return jsonify({"success": False, "error": "Correo y contraseña requeridos"}), 400
+            return (
+                jsonify({"success": False, "error": "Correo y contraseña requeridos"}),
+                400,
+            )
 
         # TODO: Implementar generate_password_hash para seguridad
         # contraseña_hash = generate_password_hash(contraseña)
@@ -67,12 +82,31 @@ def register_login():
                 try:
                     cursor.execute(query, (correo, contraseña))
                     cnx.commit()
-                    return jsonify({"success": True, "message": "Credenciales creadas"}), 201
+                    return (
+                        jsonify({"success": True, "message": "Credenciales creadas"}),
+                        201,
+                    )
                 except Error as err:
-                    if hasattr(err, 'errno') and err.errno == 1062:
-                        return jsonify({"success": False, "error": "El correo ya tiene credenciales"}), 409
-                    elif hasattr(err, 'errno') and err.errno == 1452:
-                        return jsonify({"success": False, "error": "El participante no existe (violación FK)"}), 400
+                    if hasattr(err, "errno") and err.errno == 1062:
+                        return (
+                            jsonify(
+                                {
+                                    "success": False,
+                                    "error": "El correo ya tiene credenciales",
+                                }
+                            ),
+                            409,
+                        )
+                    elif hasattr(err, "errno") and err.errno == 1452:
+                        return (
+                            jsonify(
+                                {
+                                    "success": False,
+                                    "error": "El participante no existe (violación FK)",
+                                }
+                            ),
+                            400,
+                        )
                     else:
                         return jsonify({"success": False, "error": str(err)}), 500
 
@@ -82,14 +116,15 @@ def register_login():
 
 # ==================== PARTICIPANTES ====================
 
-@app.route('/api/participantes')
+
+@app.route("/api/participantes")
 def get_participantes():
     """
     Lista todos los participantes
     """
     try:
-        ci = request.args.get('ci')
-        email = request.args.get('email')
+        ci = request.args.get("ci")
+        email = request.args.get("email")
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
@@ -101,7 +136,15 @@ def get_participantes():
                     if result:
                         return jsonify({"success": True, "data": result}), 200
                     else:
-                        return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+                        return (
+                            jsonify(
+                                {
+                                    "success": False,
+                                    "error": "Participante no encontrado",
+                                }
+                            ),
+                            404,
+                        )
 
                 elif email:
                     # Búsqueda por email
@@ -111,20 +154,30 @@ def get_participantes():
                     if result:
                         return jsonify({"success": True, "data": result}), 200
                     else:
-                        return jsonify({"success": False, "error": "Correo no registrado"}), 404
+                        return (
+                            jsonify(
+                                {"success": False, "error": "Correo no registrado"}
+                            ),
+                            404,
+                        )
 
                 else:
                     # Lista todos
                     query = "SELECT * FROM participante"
                     cursor.execute(query)
                     results = cursor.fetchall()
-                    return jsonify({"success": True, "data": results, "count": len(results)}), 200
+                    return (
+                        jsonify(
+                            {"success": True, "data": results, "count": len(results)}
+                        ),
+                        200,
+                    )
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/participante', methods=['POST'])
+@app.route("/api/participante", methods=["POST"])
 def create_participante():
     """
     Crea un nuevo participante
@@ -133,20 +186,29 @@ def create_participante():
         data = request.get_json()
 
         # Validar campos requeridos
-        if not all(key in data for key in ['ci', 'nombre', 'apellido', 'email']):
+        if not all(key in data for key in ["ci", "nombre", "apellido", "email"]):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 # Verificar si ya existe
-                cursor.execute("SELECT ci FROM participante WHERE ci = %s OR email = %s", 
-                              (data['ci'], data['email']))
+                cursor.execute(
+                    "SELECT ci FROM participante WHERE ci = %s OR email = %s",
+                    (data["ci"], data["email"]),
+                )
                 if cursor.fetchone():
-                    return jsonify({"success": False, "error": "CI o email ya registrado"}), 409
+                    return (
+                        jsonify(
+                            {"success": False, "error": "CI o email ya registrado"}
+                        ),
+                        409,
+                    )
 
                 # Insertar
                 query = "INSERT INTO participante (ci, nombre, apellido, email) VALUES (%s, %s, %s, %s)"
-                cursor.execute(query, (data['ci'], data['nombre'], data['apellido'], data['email']))
+                cursor.execute(
+                    query, (data["ci"], data["nombre"], data["apellido"], data["email"])
+                )
                 cnx.commit()
                 return jsonify({"success": True, "message": "Participante creado"}), 201
 
@@ -154,7 +216,7 @@ def create_participante():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/participante/<ci>', methods=['PUT'])
+@app.route("/api/participante/<ci>", methods=["PUT"])
 def update_participante(ci):
     """
     Actualiza un participante
@@ -167,23 +229,40 @@ def update_participante(ci):
                 # Verificar existencia
                 cursor.execute("SELECT ci FROM participante WHERE ci = %s", (ci,))
                 if not cursor.fetchone():
-                    return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+                    return (
+                        jsonify(
+                            {"success": False, "error": "Participante no encontrado"}
+                        ),
+                        404,
+                    )
 
                 # Actualizar
                 query = "UPDATE participante SET nombre = %s, apellido = %s, email = %s WHERE ci = %s"
-                cursor.execute(query, (data['nombre'], data['apellido'], data['email'], ci))
+                cursor.execute(
+                    query, (data["nombre"], data["apellido"], data["email"], ci)
+                )
                 cnx.commit()
 
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Participante actualizado"}), 200
+                    return (
+                        jsonify(
+                            {"success": True, "message": "Participante actualizado"}
+                        ),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "No se realizaron cambios"}), 400
+                    return (
+                        jsonify(
+                            {"success": False, "error": "No se realizaron cambios"}
+                        ),
+                        400,
+                    )
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/participante/<ci>', methods=['DELETE'])
+@app.route("/api/participante/<ci>", methods=["DELETE"])
 def delete_participante(ci):
     """
     Elimina un participante (soft delete recomendado)
@@ -194,24 +273,41 @@ def delete_participante(ci):
                 # Verificar existencia
                 cursor.execute("SELECT ci FROM participante WHERE ci = %s", (ci,))
                 if not cursor.fetchone():
-                    return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+                    return (
+                        jsonify(
+                            {"success": False, "error": "Participante no encontrado"}
+                        ),
+                        404,
+                    )
 
                 # TODO: Implementar soft delete
                 # query = "UPDATE participante SET estado = 'inactivo' WHERE ci = %s"
                 query = "DELETE FROM participante WHERE ci = %s"
                 cursor.execute(query, (ci,))
                 cnx.commit()
-                return jsonify({"success": True, "message": "Participante eliminado"}), 200
+                return (
+                    jsonify({"success": True, "message": "Participante eliminado"}),
+                    200,
+                )
 
     except Error as err:
         # Manejar error de FK
-        if hasattr(err, 'errno') and err.errno in (1451, 1452):
-            return jsonify({"success": False, "error": "No se puede eliminar: existen registros relacionados"}), 400
+        if hasattr(err, "errno") and err.errno in (1451, 1452):
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "No se puede eliminar: existen registros relacionados",
+                    }
+                ),
+                400,
+            )
         return jsonify({"success": False, "error": str(err)}), 500
 
     # ==================== ROL DE PARTICIPANTE ====================
 
-@app.route('/api/participante/<ci>/rol')
+
+@app.route("/api/participante/<ci>/rol")
 def get_participante_rol(ci):
     """
     Obtiene el rol de un participante
@@ -233,12 +329,21 @@ def get_participante_rol(ci):
                     return jsonify({"success": True, "data": result}), 200
                 else:
                     # Si no tiene rol asignado, se considera estudiante de grado
-                    return jsonify({"success": True, "data": {"rol": "estudiante", "tipo": "grado"}}), 200
+                    return (
+                        jsonify(
+                            {
+                                "success": True,
+                                "data": {"rol": "estudiante", "tipo": "grado"},
+                            }
+                        ),
+                        200,
+                    )
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
-@app.route('/api/participante/<ci>/cascade', methods=['DELETE'])
+
+@app.route("/api/participante/<ci>/cascade", methods=["DELETE"])
 def delete_participante_cascade(ci):
     """
     Elimina un participante y todas sus relaciones en cascada
@@ -248,62 +353,67 @@ def delete_participante_cascade(ci):
             with cnx.cursor(dictionary=True) as cursor:
 
                 # Verificar existencia
-                cursor.execute("SELECT ci, email FROM participante WHERE ci = %s", (ci,))
+                cursor.execute(
+                    "SELECT ci, email FROM participante WHERE ci = %s", (ci,)
+                )
                 participante_data = cursor.fetchone()
 
                 if not participante_data:
-                    return jsonify({"success": False, "error": "Participante no encontrado"}), 404
-
+                    return (
+                        jsonify(
+                            {"success": False, "error": "Participante no encontrado"}
+                        ),
+                        404,
+                    )
                 # Guardar correo ANTES de la transacción (evita error "transaction in progress")
                 correo_participante = participante_data["email"]
 
                 try:
                     cnx.start_transaction()
-
                     # 1. Eliminar sanciones
                     cursor.execute(
-                        "DELETE FROM sancion_participante WHERE ci_participante = %s", 
-                        (ci,)
+                        "DELETE FROM sancion_participante WHERE ci_participante = %s",
+                        (ci,),
                     )
-
                     # 2. Eliminar relación con reservas
                     cursor.execute(
-                        "DELETE FROM reserva_participante WHERE ci_participante = %s", 
-                        (ci,)
+                        "DELETE FROM reserva_participante WHERE ci_participante = %s",
+                        (ci,),
                     )
-
                     # 3. Eliminar relación con programas académicos
                     cursor.execute(
-                        "DELETE FROM participante_programa_academico WHERE ci_participante = %s", 
-                        (ci,)
+                        "DELETE FROM participante_programa_academico WHERE ci_participante = %s",
+                        (ci,),
                     )
-
                     # 4. Eliminar credenciales de login (ya sin subquery)
                     if correo_participante:
                         cursor.execute(
-                            "DELETE FROM login WHERE correo = %s", 
-                            (correo_participante,)
+                            "DELETE FROM login WHERE correo = %s",
+                            (correo_participante,),
                         )
-
                     # 5. Finalmente eliminar al participante
-                    cursor.execute(
-                        "DELETE FROM participante WHERE ci = %s", 
-                        (ci,)
-                    )
-
+                    cursor.execute("DELETE FROM participante WHERE ci = %s", (ci,))
                     cnx.commit()
-                    return jsonify({"success": True, "message": "Participante y todas sus relaciones eliminadas"}), 200
-
+                    return (
+                        jsonify(
+                            {
+                                "success": True,
+                                "message": "Participante y todas sus relaciones eliminadas",
+                            }
+                        ),
+                        200,
+                    )
                 except Error as err:
                     cnx.rollback()
                     raise err
-
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
+
 # ==================== PROGRAMAS ACADÉMICOS ====================
 
-@app.route('/api/programas')
+
+@app.route("/api/programas")
 def get_programas():
     """Lista todos los programas académicos"""
     try:
@@ -317,7 +427,7 @@ def get_programas():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/programa/<nombre_programa>/participantes')
+@app.route("/api/programa/<nombre_programa>/participantes")
 def get_participantes_por_programa(nombre_programa):
     """
     Lista participantes por programa
@@ -341,7 +451,8 @@ def get_participantes_por_programa(nombre_programa):
 
 # ==================== SALAS ====================
 
-@app.route('/api/salas')
+
+@app.route("/api/salas")
 def get_salas():
     """Lista todas las salas"""
     try:
@@ -355,7 +466,7 @@ def get_salas():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/sala/<nombre_sala>/<edificio>')
+@app.route("/api/sala/<nombre_sala>/<edificio>")
 def get_sala(nombre_sala, edificio):
     """Busca una sala específica"""
     try:
@@ -368,33 +479,46 @@ def get_sala(nombre_sala, edificio):
                 if result:
                     return jsonify({"success": True, "data": result}), 200
                 else:
-                    return jsonify({"success": False, "error": "Sala no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sala no encontrada"}),
+                        404,
+                    )
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/sala', methods=['POST'])
+@app.route("/api/sala", methods=["POST"])
 def create_sala():
     """Crea una nueva sala"""
     try:
         data = request.get_json()
 
-        if not all(key in data for key in ['nombre_sala', 'edificio', 'capacidad', 'tipo_sala']):
+        if not all(
+            key in data for key in ["nombre_sala", "edificio", "capacidad", "tipo_sala"]
+        ):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
 
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "INSERT INTO sala (nombre_sala, edificio, capacidad, tipo_sala) VALUES (%s, %s, %s, %s)"
-                cursor.execute(query, (data['nombre_sala'], data['edificio'], data['capacidad'], data['tipo_sala']))
+                cursor.execute(
+                    query,
+                    (
+                        data["nombre_sala"],
+                        data["edificio"],
+                        data["capacidad"],
+                        data["tipo_sala"],
+                    ),
+                )
                 cnx.commit()
                 return jsonify({"success": True, "message": "Sala creada"}), 201
     except Error as err:
-        if hasattr(err, 'errno') and err.errno == 1062:
+        if hasattr(err, "errno") and err.errno == 1062:
             return jsonify({"success": False, "error": "La sala ya existe"}), 409
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/sala/<nombre_sala>/<edificio>', methods=['PUT'])
+@app.route("/api/sala/<nombre_sala>/<edificio>", methods=["PUT"])
 def update_sala(nombre_sala, edificio):
     """Actualiza una sala"""
     try:
@@ -402,18 +526,26 @@ def update_sala(nombre_sala, edificio):
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "UPDATE sala SET capacidad = %s, tipo_sala = %s WHERE nombre_sala = %s AND edificio = %s"
-                cursor.execute(query, (data['capacidad'], data['tipo_sala'], nombre_sala, edificio))
+                cursor.execute(
+                    query, (data["capacidad"], data["tipo_sala"], nombre_sala, edificio)
+                )
                 cnx.commit()
 
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Sala actualizada"}), 200
+                    return (
+                        jsonify({"success": True, "message": "Sala actualizada"}),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "Sala no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sala no encontrada"}),
+                        404,
+                    )
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/sala/<nombre_sala>/<edificio>', methods=['DELETE'])
+@app.route("/api/sala/<nombre_sala>/<edificio>", methods=["DELETE"])
 def delete_sala(nombre_sala, edificio):
     """Elimina una sala"""
     try:
@@ -426,16 +558,28 @@ def delete_sala(nombre_sala, edificio):
                 if cursor.rowcount > 0:
                     return jsonify({"success": True, "message": "Sala eliminada"}), 200
                 else:
-                    return jsonify({"success": False, "error": "Sala no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sala no encontrada"}),
+                        404,
+                    )
     except Error as err:
-        if hasattr(err, 'errno') and err.errno in (1451, 1452):
-            return jsonify({"success": False, "error": "No se puede eliminar: existen reservas asociadas"}), 400
+        if hasattr(err, "errno") and err.errno in (1451, 1452):
+            return (
+                jsonify(
+                    {
+                        "success": False,
+                        "error": "No se puede eliminar: existen reservas asociadas",
+                    }
+                ),
+                400,
+            )
         return jsonify({"success": False, "error": str(err)}), 500
 
 
 # ==================== TURNOS ====================
 
-@app.route('/api/turnos')
+
+@app.route("/api/turnos")
 def get_turnos():
     """Lista todos los turnos disponibles"""
     try:
@@ -460,40 +604,38 @@ def get_turnos():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-
 # ==================== RESERVAS ====================
-@app.route('/api/reservas')
+@app.route("/api/reservas")
 def get_reservas():
     """
     Lista reservas con filtros opcionales.
     """
     try:
-        fecha = request.args.get('fecha')
-        nombre_sala = request.args.get('nombre_sala')
-        edificio = request.args.get('edificio')
-        ci_participante = request.args.get('ci_participante')
-        estado = request.args.get('estado')
+        fecha = request.args.get("fecha")
+        nombre_sala = request.args.get("nombre_sala")
+        edificio = request.args.get("edificio")
+        ci_participante = request.args.get("ci_participante")
+        estado = request.args.get("estado")
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
 
                 query = """
-SELECT 
-    r.id_reserva,
-    r.id_turno,
-    DATE_FORMAT(r.fecha, '%Y-%m-%d') AS fecha,
-    r.estado,
-    r.nombre_sala,
-    r.edificio,
-    s.capacidad,
-    s.tipo_sala,
-    DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora_inicio,
-    DATE_FORMAT(t.hora_fin, '%H:%i') AS hora_fin
-FROM reserva r
-JOIN sala s ON s.nombre_sala = r.nombre_sala AND s.edificio = r.edificio
-JOIN turno t ON t.id_turno = r.id_turno
-"""
-
+                    SELECT 
+                        r.id_reserva,
+                        r.id_turno,
+                        DATE_FORMAT(r.fecha, '%Y-%m-%d') AS fecha,
+                        r.estado,
+                        r.nombre_sala,
+                        r.edificio,
+                        s.capacidad,
+                        s.tipo_sala,
+                        DATE_FORMAT(t.hora_inicio, '%H:%i') AS hora_inicio,
+                        DATE_FORMAT(t.hora_fin, '%H:%i') AS hora_fin
+                    FROM reserva r
+                    JOIN sala s ON s.nombre_sala = r.nombre_sala AND s.edificio = r.edificio
+                    JOIN turno t ON t.id_turno = r.id_turno
+                    """
 
                 conditions = []
                 params = []
@@ -512,7 +654,9 @@ JOIN turno t ON t.id_turno = r.id_turno
                     params.append(estado)
 
                 if ci_participante:
-                    query += " JOIN reserva_participante rp ON rp.id_reserva = r.id_reserva"
+                    query += (
+                        " JOIN reserva_participante rp ON rp.id_reserva = r.id_reserva"
+                    )
                     conditions.append("rp.ci_participante = %s")
                     params.append(ci_participante)
 
@@ -524,22 +668,30 @@ JOIN turno t ON t.id_turno = r.id_turno
                 cursor.execute(query, tuple(params))
                 results = cursor.fetchall()
 
-                return jsonify({"success": True, "data": results, "count": len(results)}), 200
+                return (
+                    jsonify({"success": True, "data": results, "count": len(results)}),
+                    200,
+                )
 
     except Error as err:
-        return jsonify({"success": False, "error": f"Error SQL en get_reservas: {str(err)}"}), 500
+        return (
+            jsonify(
+                {"success": False, "error": f"Error SQL en get_reservas: {str(err)}"}
+            ),
+            500,
+        )
 
 
 # ==================== VALIDAR RESERVA ====================
-@app.route('/api/reserva/validar', methods=['POST'])
+@app.route("/api/reserva/validar", methods=["POST"])
 def validar_reserva():
     try:
         data = request.get_json()
-        ci = data['ci_participante']
-        nombre_sala = data['nombre_sala']
-        edificio = data['edificio']
-        fecha = data['fecha']
-        id_turno = data['id_turno']
+        ci = data["ci_participante"]
+        nombre_sala = data["nombre_sala"]
+        edificio = data["edificio"]
+        fecha = data["fecha"]
+        id_turno = data["id_turno"]
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
@@ -563,26 +715,46 @@ def validar_reserva():
                      WHERE ci_participante = %s AND CURDATE() BETWEEN fecha_inicio AND fecha_fin) as sancionado
                 """
 
-                cursor.execute(query, (
-                    nombre_sala, edificio, fecha, id_turno,
-                    ci, fecha,
-                    ci, fecha,
-                    ci
-                ))
+                cursor.execute(
+                    query,
+                    (nombre_sala, edificio, fecha, id_turno, ci, fecha, ci, fecha, ci),
+                )
 
                 result = cursor.fetchone()
 
-                if result['sala_ocupada'] > 0:
-                    return jsonify({"success": False, "error": "Sala no disponible"}), 400
+                if result["sala_ocupada"] > 0:
+                    return (
+                        jsonify({"success": False, "error": "Sala no disponible"}),
+                        400,
+                    )
 
-                if result['reservas_dia'] >= 2:
-                    return jsonify({"success": False, "error": "Límite de 2 horas diarias alcanzado"}), 400
+                if result["reservas_dia"] >= 2:
+                    return (
+                        jsonify(
+                            {
+                                "success": False,
+                                "error": "Límite de 2 horas diarias alcanzado",
+                            }
+                        ),
+                        400,
+                    )
 
-                if result['reservas_semana'] >= 3:
-                    return jsonify({"success": False, "error": "Límite de 3 reservas semanales alcanzado"}), 400
+                if result["reservas_semana"] >= 3:
+                    return (
+                        jsonify(
+                            {
+                                "success": False,
+                                "error": "Límite de 3 reservas semanales alcanzado",
+                            }
+                        ),
+                        400,
+                    )
 
-                if result['sancionado'] > 0:
-                    return jsonify({"success": False, "error": "Participante sancionado"}), 400
+                if result["sancionado"] > 0:
+                    return (
+                        jsonify({"success": False, "error": "Participante sancionado"}),
+                        400,
+                    )
 
                 return jsonify({"success": True, "message": "Reserva válida"}), 200
 
@@ -591,19 +763,24 @@ def validar_reserva():
 
 
 # ==================== CREAR RESERVA ====================
-@app.route('/api/reserva', methods=['POST'])
+@app.route("/api/reserva", methods=["POST"])
 def create_reserva():
     try:
         data = request.get_json()
-        participantes = data.get('participantes', [])
+        participantes = data.get("participantes", [])
 
         if not participantes:
-            return jsonify({"success": False, "error": "Debe incluir al menos un participante"}), 400
+            return (
+                jsonify(
+                    {"success": False, "error": "Debe incluir al menos un participante"}
+                ),
+                400,
+            )
 
-        nombre_sala = data.get('nombre_sala')
-        edificio = data.get('edificio')
-        fecha = data.get('fecha')
-        id_turno = data.get('id_turno')
+        nombre_sala = data.get("nombre_sala")
+        edificio = data.get("edificio")
+        fecha = data.get("fecha")
+        id_turno = data.get("id_turno")
 
         if not all([nombre_sala, edificio, fecha, id_turno]):
             return jsonify({"success": False, "error": "Faltan datos requeridos"}), 400
@@ -612,78 +789,144 @@ def create_reserva():
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT id_reserva FROM reserva
                     WHERE nombre_sala = %s AND edificio = %s AND fecha = %s 
                     AND id_turno = %s AND estado = 'activa'
-                """, (nombre_sala, edificio, fecha, id_turno))
+                """,
+                    (nombre_sala, edificio, fecha, id_turno),
+                )
 
                 if cursor.fetchone():
-                    return jsonify({"success": False, "error": "La sala ya está ocupada en este turno"}), 400
+                    return (
+                        jsonify(
+                            {
+                                "success": False,
+                                "error": "La sala ya está ocupada en este turno",
+                            }
+                        ),
+                        400,
+                    )
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT tipo_sala FROM sala 
                     WHERE nombre_sala = %s AND edificio = %s
-                """, (nombre_sala, edificio))
+                """,
+                    (nombre_sala, edificio),
+                )
 
                 sala_info = cursor.fetchone()
                 if not sala_info:
-                    return jsonify({"success": False, "error": "Sala no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sala no encontrada"}),
+                        404,
+                    )
 
-                tipo_sala = sala_info['tipo_sala']
+                tipo_sala = sala_info["tipo_sala"]
 
         # --------------------- Validaciones por participante ---------------------
         for ci in participantes:
             with get_db_connection() as cnx_inner:
                 with cnx_inner.cursor(dictionary=True) as cursor_inner:
 
-                    cursor_inner.execute("""
+                    cursor_inner.execute(
+                        """
                         SELECT COUNT(*) AS count 
                         FROM reserva r
                         JOIN reserva_participante rp ON r.id_reserva = rp.id_reserva
                         WHERE rp.ci_participante = %s AND r.fecha = %s AND r.estado = 'activa'
-                    """, (ci, fecha))
-                    if cursor_inner.fetchone()['count'] >= 2:
-                        return jsonify({"success": False, "error": f"{ci} superó límite diario"}), 400
+                    """,
+                        (ci, fecha),
+                    )
+                    if cursor_inner.fetchone()["count"] >= 2:
+                        return (
+                            jsonify(
+                                {
+                                    "success": False,
+                                    "error": f"{ci} superó límite diario",
+                                }
+                            ),
+                            400,
+                        )
 
-                    cursor_inner.execute("""
+                    cursor_inner.execute(
+                        """
                         SELECT COUNT(*) AS count 
                         FROM reserva r
                         JOIN reserva_participante rp ON r.id_reserva = rp.id_reserva
                         WHERE rp.ci_participante = %s 
                         AND YEARWEEK(r.fecha,1)=YEARWEEK(%s,1)
                         AND r.estado='activa'
-                    """, (ci, fecha))
-                    if cursor_inner.fetchone()['count'] >= 3:
-                        return jsonify({"success": False, "error": f"{ci} superó límite semanal"}), 400
+                    """,
+                        (ci, fecha),
+                    )
+                    if cursor_inner.fetchone()["count"] >= 3:
+                        return (
+                            jsonify(
+                                {
+                                    "success": False,
+                                    "error": f"{ci} superó límite semanal",
+                                }
+                            ),
+                            400,
+                        )
 
-                    cursor_inner.execute("""
+                    cursor_inner.execute(
+                        """
                         SELECT COUNT(*) AS count 
                         FROM sancion_participante
                         WHERE ci_participante = %s 
                         AND CURDATE() BETWEEN fecha_inicio AND fecha_fin
-                    """, (ci,))
-                    if cursor_inner.fetchone()['count'] > 0:
-                        return jsonify({"success": False, "error": f"{ci} está sancionado"}), 400
+                    """,
+                        (ci,),
+                    )
+                    if cursor_inner.fetchone()["count"] > 0:
+                        return (
+                            jsonify(
+                                {"success": False, "error": f"{ci} está sancionado"}
+                            ),
+                            400,
+                        )
 
-                    if tipo_sala == 'posgrado':
-                        cursor_inner.execute("""
+                    if tipo_sala == "posgrado":
+                        cursor_inner.execute(
+                            """
                             SELECT COUNT(*) AS count
                             FROM participante_programa_academico ppa
                             JOIN programa_academico pa ON ppa.nombre_programa = pa.nombre_programa
                             WHERE ppa.ci_participante = %s AND pa.tipo = 'posgrado'
-                        """, (ci,))
-                        if cursor_inner.fetchone()['count'] == 0:
-                            return jsonify({"success": False, "error": f"{ci} no pertenece a posgrado"}), 400
+                        """,
+                            (ci,),
+                        )
+                        if cursor_inner.fetchone()["count"] == 0:
+                            return (
+                                jsonify(
+                                    {
+                                        "success": False,
+                                        "error": f"{ci} no pertenece a posgrado",
+                                    }
+                                ),
+                                400,
+                            )
 
-                    if tipo_sala == 'docente':
-                        cursor_inner.execute("""
+                    if tipo_sala == "docente":
+                        cursor_inner.execute(
+                            """
                             SELECT COUNT(*) AS count
                             FROM participante_programa_academico
                             WHERE ci_participante = %s AND rol='docente'
-                        """, (ci,))
-                        if cursor_inner.fetchone()['count'] == 0:
-                            return jsonify({"success": False, "error": f"{ci} no es docente"}), 400
+                        """,
+                            (ci,),
+                        )
+                        if cursor_inner.fetchone()["count"] == 0:
+                            return (
+                                jsonify(
+                                    {"success": False, "error": f"{ci} no es docente"}
+                                ),
+                                400,
+                            )
 
         # --------------------- Crear reserva ---------------------
         with get_db_connection() as cnx:
@@ -691,10 +934,13 @@ def create_reserva():
                 cnx.start_transaction()
                 with cnx.cursor() as cursor:
 
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         INSERT INTO reserva (nombre_sala, edificio, fecha, id_turno, estado)
                         VALUES (%s, %s, %s, %s, 'activa')
-                    """, (nombre_sala, edificio, fecha, id_turno))
+                    """,
+                        (nombre_sala, edificio, fecha, id_turno),
+                    )
 
                     id_reserva = cursor.lastrowid
 
@@ -719,26 +965,40 @@ def create_reserva():
 
 
 # ==================== CANCELAR RESERVA ====================
-@app.route('/api/reserva/<id_reserva>/cancelar', methods=['PUT'])
+@app.route("/api/reserva/<id_reserva>/cancelar", methods=["PUT"])
 def cancelar_reserva(id_reserva):
     try:
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     SELECT id_reserva 
                     FROM reserva 
                     WHERE id_reserva=%s AND estado='activa'
-                """, (id_reserva,))
+                """,
+                    (id_reserva,),
+                )
 
                 if not cursor.fetchone():
-                    return jsonify({"success": False, "error": "Reserva no encontrada o ya cancelada"}), 404
+                    return (
+                        jsonify(
+                            {
+                                "success": False,
+                                "error": "Reserva no encontrada o ya cancelada",
+                            }
+                        ),
+                        404,
+                    )
 
-                cursor.execute("""
+                cursor.execute(
+                    """
                     UPDATE reserva 
                     SET estado='cancelada' 
                     WHERE id_reserva=%s
-                """, (id_reserva,))
+                """,
+                    (id_reserva,),
+                )
 
                 cnx.commit()
                 return jsonify({"success": True, "message": "Reserva cancelada"}), 200
@@ -747,13 +1007,13 @@ def cancelar_reserva(id_reserva):
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reserva/<int:id_reserva>/asistencia', methods=['PUT'])
+@app.route("/api/reserva/<int:id_reserva>/asistencia", methods=["PUT"])
 def marcar_asistencia(id_reserva):
     """Marca la asistencia de un participante"""
     try:
         data = request.get_json()
 
-        if 'asistencia' not in data or 'ci_participante' not in data:
+        if "asistencia" not in data or "ci_participante" not in data:
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
 
         with get_db_connection() as cnx:
@@ -763,44 +1023,66 @@ def marcar_asistencia(id_reserva):
                 SET asistencia = %s
                 WHERE id_reserva = %s AND ci_participante = %s
                 """
-                cursor.execute(query, (data['asistencia'], id_reserva, data['ci_participante']))
+                cursor.execute(
+                    query, (data["asistencia"], id_reserva, data["ci_participante"])
+                )
                 cnx.commit()
 
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Asistencia marcada"}), 200
+                    return (
+                        jsonify({"success": True, "message": "Asistencia marcada"}),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "Registro no encontrado"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Registro no encontrado"}),
+                        404,
+                    )
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reserva/<int:id_reserva>/sin_asistencia', methods=['PUT'])
+@app.route("/api/reserva/<int:id_reserva>/sin_asistencia", methods=["PUT"])
 def marcar_sin_asistencia(id_reserva):
     """Marca una reserva sin asistencia"""
     try:
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
-                query = "UPDATE reserva SET estado = 'sin asistencia' WHERE id_reserva = %s"
+                query = (
+                    "UPDATE reserva SET estado = 'sin asistencia' WHERE id_reserva = %s"
+                )
                 cursor.execute(query, (id_reserva,))
                 cnx.commit()
 
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Reserva marcada sin asistencia"}), 200
+                    return (
+                        jsonify(
+                            {
+                                "success": True,
+                                "message": "Reserva marcada sin asistencia",
+                            }
+                        ),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "Reserva no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Reserva no encontrada"}),
+                        404,
+                    )
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
 # ==================== SANCIONES ====================
 
-@app.route('/api/sanciones')
+
+@app.route("/api/sanciones")
 def get_sanciones():
     """Lista todas las sanciones"""
     """Lista todas las sanciones con datos del participante"""
     try:
-        ci = request.args.get('ci_participante')
-        activas = request.args.get('activas')
+        ci = request.args.get("ci_participante")
+        activas = request.args.get("activas")
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
@@ -822,7 +1104,7 @@ def get_sanciones():
                     query += " AND s.ci_participante = %s"
                     params.append(ci)
 
-                if activas == 'true':
+                if activas == "true":
                     query += " AND CURDATE() BETWEEN fecha_inicio AND fecha_fin"
                     query += " AND CURDATE() BETWEEN s.fecha_inicio AND s.fecha_fin"
 
@@ -836,13 +1118,15 @@ def get_sanciones():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/sancion', methods=['POST'])
+@app.route("/api/sancion", methods=["POST"])
 def create_sancion():
     """Crea una nueva sanción"""
     try:
         data = request.get_json()
 
-        if not all(key in data for key in ['ci_participante', 'fecha_inicio', 'fecha_fin']):
+        if not all(
+            key in data for key in ["ci_participante", "fecha_inicio", "fecha_fin"]
+        ):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
 
         with get_db_connection() as cnx:
@@ -851,16 +1135,22 @@ def create_sancion():
                 INSERT INTO sancion_participante (ci_participante, fecha_inicio, fecha_fin)
                 VALUES (%s, %s, %s)
                 """
-                cursor.execute(query, (data['ci_participante'], data['fecha_inicio'], data['fecha_fin']))
+                cursor.execute(
+                    query,
+                    (data["ci_participante"], data["fecha_inicio"], data["fecha_fin"]),
+                )
                 cnx.commit()
                 return jsonify({"success": True, "message": "Sanción creada"}), 201
     except Error as err:
-        if hasattr(err, 'errno') and err.errno == 1452:
-            return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+        if hasattr(err, "errno") and err.errno == 1452:
+            return (
+                jsonify({"success": False, "error": "Participante no encontrado"}),
+                404,
+            )
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/sancion/<ci>/<fecha_inicio>', methods=['DELETE'])
+@app.route("/api/sancion/<ci>/<fecha_inicio>", methods=["DELETE"])
 def delete_sancion(ci, fecha_inicio):
     """Elimina una sanción"""
     try:
@@ -871,13 +1161,20 @@ def delete_sancion(ci, fecha_inicio):
                 cnx.commit()
 
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Sanción eliminada"}), 200
+                    return (
+                        jsonify({"success": True, "message": "Sanción eliminada"}),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "Sanción no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sanción no encontrada"}),
+                        404,
+                    )
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
-    
-@app.route('/api/admin/sanciones')
+
+
+@app.route("/api/admin/sanciones")
 def get_admin_sanciones():
     """Lista todas las sanciones para el panel de admin"""
     try:
@@ -895,48 +1192,57 @@ def get_admin_sanciones():
                 INNER JOIN participante p ON s.ci_participante = p.ci
                 ORDER BY s.fecha_inicio DESC
                 """
-                
+
                 cursor.execute(query)
                 results = cursor.fetchall()
-                
+
                 # Agregar un ID único para cada sanción
                 for row in results:
-                    row['id_sancion'] = f"{row['ci_participante']}_{row['fecha_inicio']}"
-                
+                    row["id_sancion"] = (
+                        f"{row['ci_participante']}_{row['fecha_inicio']}"
+                    )
+
                 return jsonify({"success": True, "data": results}), 200
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/admin/sancion/<id_sancion>', methods=['DELETE'])
+@app.route("/api/admin/sancion/<id_sancion>", methods=["DELETE"])
 def delete_admin_sancion(id_sancion):
     """Elimina una sanción usando el ID compuesto"""
     try:
         # Separar el ID compuesto
-        parts = id_sancion.split('_')
+        parts = id_sancion.split("_")
         if len(parts) < 2:
             return jsonify({"success": False, "error": "ID de sanción inválido"}), 400
-        
+
         ci = parts[0]
-        fecha_inicio = '_'.join(parts[1:])
-        
+        fecha_inicio = "_".join(parts[1:])
+
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 query = "DELETE FROM sancion_participante WHERE ci_participante = %s AND fecha_inicio = %s"
                 cursor.execute(query, (ci, fecha_inicio))
                 cnx.commit()
-                
+
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Sanción eliminada"}), 200
+                    return (
+                        jsonify({"success": True, "message": "Sanción eliminada"}),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "Sanción no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sanción no encontrada"}),
+                        404,
+                    )
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
 # ==================== REPORTES ====================
 
-@app.route('/api/reportes/salas-mas-reservadas')
+
+@app.route("/api/reportes/salas-mas-reservadas")
 def salas_mas_reservadas():
     """Reporte de salas más reservadas"""
     try:
@@ -956,7 +1262,7 @@ def salas_mas_reservadas():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/turnos-mas-demandados')
+@app.route("/api/reportes/turnos-mas-demandados")
 def turnos_mas_demandados():
     """Reporte de turnos más demandados"""
     try:
@@ -971,12 +1277,18 @@ def turnos_mas_demandados():
                 """
                 cursor.execute(query)
                 results = cursor.fetchall()
+                # Convertir timedelta a string para JSON
+                for row in results:
+                    if 'hora_inicio' in row and row['hora_inicio'] is not None:
+                        row['hora_inicio'] = str(row['hora_inicio'])
+                    if 'hora_fin' in row and row['hora_fin'] is not None:
+                        row['hora_fin'] = str(row['hora_fin'])
                 return jsonify({"success": True, "data": results}), 200
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/promedio-participantes')
+@app.route("/api/reportes/promedio-participantes")
 def promedio_participantes():
     """Reporte de promedio de participantes por sala"""
     try:
@@ -995,12 +1307,16 @@ def promedio_participantes():
                 """
                 cursor.execute(query)
                 results = cursor.fetchall()
+                # Convertir Decimal a float para JSON
+                for row in results:
+                    if 'promedio_participantes' in row and row['promedio_participantes'] is not None:
+                        row['promedio_participantes'] = float(row['promedio_participantes'])
                 return jsonify({"success": True, "data": results}), 200
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/reservas-por-carrera')
+@app.route("/api/reportes/reservas-por-carrera")
 def reservas_por_carrera():
     """Reporte de reservas por carrera"""
     try:
@@ -1022,7 +1338,7 @@ def reservas_por_carrera():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/ocupacion-por-edificio')
+@app.route("/api/reportes/ocupacion-por-edificio")
 def ocupacion_por_edificio():
     """
     Reporte de ocupación por edificio
@@ -1050,22 +1366,32 @@ def ocupacion_por_edificio():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/reservas-por-tipo-usuario')
+@app.route("/api/reportes/reservas-por-tipo-usuario")
 def reservas_por_tipo_usuario():
-    """Reporte de reservas por tipo de usuario"""
+    """
+    Reporte de reservas por tipo de usuario
+    ACTUALIZADO: Ahora incluye separación grado/posgrado
+    """
     try:
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 query = """
                 SELECT 
-                    ppa.rol, 
+                    CASE 
+                        WHEN ppa.rol = 'docente' THEN 'Docente'
+                        WHEN ppa.rol = 'admin' THEN 'Administrador'
+                        WHEN pa.tipo = 'posgrado' THEN 'Estudiante Posgrado'
+                        WHEN pa.tipo = 'grado' THEN 'Estudiante Grado'
+                        ELSE 'Estudiante Grado'
+                    END AS tipo_usuario,
                     COUNT(DISTINCT rp.id_reserva) AS reservas,
                     SUM(CASE WHEN rp.asistencia = TRUE THEN 1 ELSE 0 END) AS asistencias,
                     ROUND(SUM(CASE WHEN rp.asistencia = TRUE THEN 1 ELSE 0 END) * 100.0 / 
-                        COUNT(*), 2) AS porcentaje_asistencia
+                        NULLIF(COUNT(*), 0), 2) AS porcentaje_asistencia
                 FROM reserva_participante rp
                 JOIN participante_programa_academico ppa ON ppa.ci_participante = rp.ci_participante
-                GROUP BY ppa.rol
+                LEFT JOIN programa_academico pa ON pa.nombre_programa = ppa.nombre_programa
+                GROUP BY tipo_usuario
                 ORDER BY reservas DESC
                 """
                 cursor.execute(query)
@@ -1075,7 +1401,7 @@ def reservas_por_tipo_usuario():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/cantidad-sanciones')
+@app.route("/api/reportes/cantidad-sanciones")
 def cantidad_sanciones():
     """
     Reporte de cantidad de sanciones por tipo de usuario
@@ -1101,22 +1427,31 @@ def cantidad_sanciones():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/porcentaje-uso-reservas')
+@app.route("/api/reportes/porcentaje-uso-reservas")
 def porcentaje_uso_reservas():
     """
     Reporte de porcentaje de uso de reservas
-    ERROR CORREGIDO: Sintaxis SQL del cálculo de porcentaje
+    Calcula reservas finalizadas (fecha/hora pasada y no cancelada) vs canceladas
     """
     try:
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
                 query = """
                 SELECT 
-                    SUM(CASE WHEN estado = 'finalizada' THEN 1 ELSE 0 END) AS usadas,
-                    SUM(CASE WHEN estado IN ('cancelada','sin asistencia') THEN 1 ELSE 0 END) AS no_usadas,
+                    SUM(CASE 
+                        WHEN estado != 'cancelada' 
+                        AND (r.fecha < CURDATE() OR (r.fecha = CURDATE() AND t.hora_fin <= CURTIME()))
+                        THEN 1 ELSE 0 
+                    END) AS usadas,
+                    SUM(CASE WHEN estado = 'cancelada' THEN 1 ELSE 0 END) AS no_usadas,
                     COUNT(*) AS total,
-                    ROUND((SUM(CASE WHEN estado = 'finalizada' THEN 1 ELSE 0 END) * 100.0 / COUNT(*)), 2) AS porcentaje_uso
-                FROM reserva
+                    ROUND((SUM(CASE 
+                        WHEN estado != 'cancelada' 
+                        AND (r.fecha < CURDATE() OR (r.fecha = CURDATE() AND t.hora_fin <= CURTIME()))
+                        THEN 1 ELSE 0 
+                    END) * 100.0 / COUNT(*)), 2) AS porcentaje_uso
+                FROM reserva r
+                JOIN turno t ON t.id_turno = r.id_turno
                 """
                 cursor.execute(query)
                 result = cursor.fetchone()
@@ -1125,7 +1460,7 @@ def porcentaje_uso_reservas():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/salas-incumplimiento')
+@app.route("/api/reportes/salas-incumplimiento")
 def salas_incumplimiento():
     """Reporte de salas con mayor incumplimiento"""
     try:
@@ -1156,14 +1491,14 @@ def salas_incumplimiento():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/participantes-mas-activos')
+@app.route("/api/reportes/participantes-mas-activos")
 def participantes_mas_activos():
     """
     Reporte de participantes más activos
     MEJORA IMPLEMENTADA: JOIN con tabla participante para mostrar nombres
     """
     try:
-        limit = request.args.get('limit', 10, type=int)
+        limit = request.args.get("limit", 10, type=int)
 
         with get_db_connection() as cnx:
             with cnx.cursor(dictionary=True) as cursor:
@@ -1190,7 +1525,7 @@ def participantes_mas_activos():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/reportes/distribucion-por-dia')
+@app.route("/api/reportes/distribucion-por-dia")
 def distribucion_por_dia():
     """
     Reporte de distribución de reservas por día
@@ -1220,7 +1555,88 @@ def distribucion_por_dia():
                 results = cursor.fetchall()
                 # Remover dia_num del resultado final
                 for r in results:
-                    r.pop('dia_num', None)
+                    r.pop("dia_num", None)
+                return jsonify({"success": True, "data": results}), 200
+    except Error as err:
+        return jsonify({"success": False, "error": str(err)}), 500
+
+
+@app.route("/api/reportes/reservas-asistencias-detallado")
+def reservas_asistencias_detallado():
+    """
+    Reporte de reservas y asistencias separado por:
+    - Docentes
+    - Estudiantes de Grado
+    - Estudiantes de Posgrado
+    """
+    try:
+        with get_db_connection() as cnx:
+            with cnx.cursor(dictionary=True) as cursor:
+                query = """
+                SELECT 
+                    CASE 
+                        WHEN ppa.rol = 'docente' THEN 'Docente'
+                        WHEN ppa.rol = 'admin' THEN 'Administrador'
+                        WHEN pa.tipo = 'posgrado' THEN 'Estudiante Posgrado'
+                        WHEN pa.tipo = 'grado' THEN 'Estudiante Grado'
+                        ELSE 'Estudiante Grado'
+                    END AS tipo_usuario,
+                    COUNT(DISTINCT rp.id_reserva) AS total_reservas,
+                    SUM(CASE WHEN rp.asistencia = TRUE THEN 1 ELSE 0 END) AS total_asistencias,
+                    SUM(CASE WHEN rp.asistencia = FALSE THEN 1 ELSE 0 END) AS inasistencias,
+                    ROUND(
+                        SUM(CASE WHEN rp.asistencia = TRUE THEN 1 ELSE 0 END) * 100.0 / 
+                        NULLIF(COUNT(*), 0), 
+                        2
+                    ) AS porcentaje_asistencia
+                FROM reserva_participante rp
+                JOIN participante_programa_academico ppa ON ppa.ci_participante = rp.ci_participante
+                LEFT JOIN programa_academico pa ON pa.nombre_programa = ppa.nombre_programa
+                GROUP BY tipo_usuario
+                ORDER BY total_reservas DESC
+                """
+                cursor.execute(query)
+                results = cursor.fetchall()
+                return jsonify({"success": True, "data": results}), 200
+    except Error as err:
+        return jsonify({"success": False, "error": str(err)}), 500
+
+
+@app.route("/api/reportes/sanciones-detallado")
+def sanciones_detallado():
+    """
+    Reporte de sanciones separado por:
+    - Docentes
+    - Estudiantes de Grado
+    - Estudiantes de Posgrado
+    """
+    try:
+        with get_db_connection() as cnx:
+            with cnx.cursor(dictionary=True) as cursor:
+                query = """
+                SELECT 
+                    CASE 
+                        WHEN ppa.rol = 'docente' THEN 'Docente'
+                        WHEN ppa.rol = 'admin' THEN 'Administrador'
+                        WHEN pa.tipo = 'posgrado' THEN 'Estudiante Posgrado'
+                        WHEN pa.tipo = 'grado' THEN 'Estudiante Grado'
+                        ELSE 'Estudiante Grado'
+                    END AS tipo_usuario,
+                    COUNT(*) AS total_sanciones,
+                    COUNT(DISTINCT s.ci_participante) AS participantes_sancionados,
+                    SUM(CASE 
+                        WHEN CURDATE() BETWEEN s.fecha_inicio AND s.fecha_fin 
+                        THEN 1 ELSE 0 
+                    END) AS sanciones_activas,
+                    ROUND(AVG(DATEDIFF(s.fecha_fin, s.fecha_inicio)), 2) AS promedio_dias_sancion
+                FROM sancion_participante s
+                JOIN participante_programa_academico ppa ON ppa.ci_participante = s.ci_participante
+                LEFT JOIN programa_academico pa ON pa.nombre_programa = ppa.nombre_programa
+                GROUP BY tipo_usuario
+                ORDER BY total_sanciones DESC
+                """
+                cursor.execute(query)
+                results = cursor.fetchall()
                 return jsonify({"success": True, "data": results}), 200
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
@@ -1228,13 +1644,14 @@ def distribucion_por_dia():
 
 # ==================== ADMINISTRACIÓN - ROLES ====================
 
-@app.route('/api/admin/verificar', methods=['GET'])
+
+@app.route("/api/admin/verificar", methods=["GET"])
 def verificar_admin():
     """
     Verifica si un usuario tiene rol de administrador
     """
     try:
-        correo = request.args.get('correo')
+        correo = request.args.get("correo")
 
         if not correo:
             return jsonify({"success": False, "error": "Correo requerido"}), 400
@@ -1261,7 +1678,8 @@ def verificar_admin():
 
 # ==================== ADMINISTRACIÓN - SALAS ====================
 
-@app.route('/api/admin/salas', methods=['GET'])
+
+@app.route("/api/admin/salas", methods=["GET"])
 def admin_get_all_salas():
     """Lista todas las salas con estadísticas"""
     try:
@@ -1284,44 +1702,57 @@ def admin_get_all_salas():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/admin/sala', methods=['POST'])
+@app.route("/api/admin/sala", methods=["POST"])
 def admin_crear_sala():
     """Crea una nueva sala (solo admin)"""
     try:
         data = request.get_json()
 
-        if not all(key in data for key in ['nombre_sala', 'edificio', 'capacidad', 'tipo_sala']):
+        if not all(
+            key in data for key in ["nombre_sala", "edificio", "capacidad", "tipo_sala"]
+        ):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
 
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 # Verificar que el edificio existe
-                cursor.execute("SELECT nombre_edificio FROM edificio WHERE nombre_edificio = %s", 
-                             (data['edificio'],))
+                cursor.execute(
+                    "SELECT nombre_edificio FROM edificio WHERE nombre_edificio = %s",
+                    (data["edificio"],),
+                )
                 if not cursor.fetchone():
-                    return jsonify({"success": False, "error": "Edificio no existe"}), 400
+                    return (
+                        jsonify({"success": False, "error": "Edificio no existe"}),
+                        400,
+                    )
 
                 # Crear sala
                 query = """
                 INSERT INTO sala (nombre_sala, edificio, capacidad, tipo_sala) 
                 VALUES (%s, %s, %s, %s)
                 """
-                cursor.execute(query, (
-                    data['nombre_sala'], 
-                    data['edificio'], 
-                    data['capacidad'], 
-                    data['tipo_sala']
-                ))
+                cursor.execute(
+                    query,
+                    (
+                        data["nombre_sala"],
+                        data["edificio"],
+                        data["capacidad"],
+                        data["tipo_sala"],
+                    ),
+                )
                 cnx.commit()
-                return jsonify({"success": True, "message": "Sala creada exitosamente"}), 201
+                return (
+                    jsonify({"success": True, "message": "Sala creada exitosamente"}),
+                    201,
+                )
 
     except Error as err:
-        if hasattr(err, 'errno') and err.errno == 1062:
+        if hasattr(err, "errno") and err.errno == 1062:
             return jsonify({"success": False, "error": "La sala ya existe"}), 409
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/admin/sala/<nombre_sala>/<edificio>', methods=['DELETE'])
+@app.route("/api/admin/sala/<nombre_sala>/<edificio>", methods=["DELETE"])
 def admin_eliminar_sala(nombre_sala, edificio):
     """Elimina una sala y sus reservas asociadas"""
     try:
@@ -1330,32 +1761,47 @@ def admin_eliminar_sala(nombre_sala, edificio):
                 cnx.start_transaction()
                 with cnx.cursor() as cursor:
                     # Verificar existencia
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         SELECT nombre_sala FROM sala 
                         WHERE nombre_sala = %s AND edificio = %s
-                    """, (nombre_sala, edificio))
+                    """,
+                        (nombre_sala, edificio),
+                    )
 
                     if not cursor.fetchone():
-                        return jsonify({"success": False, "error": "Sala no encontrada"}), 404
+                        return (
+                            jsonify({"success": False, "error": "Sala no encontrada"}),
+                            404,
+                        )
 
                     # Eliminar participantes de reservas asociadas
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         DELETE rp FROM reserva_participante rp
                         JOIN reserva r ON rp.id_reserva = r.id_reserva
                         WHERE r.nombre_sala = %s AND r.edificio = %s
-                    """, (nombre_sala, edificio))
+                    """,
+                        (nombre_sala, edificio),
+                    )
 
                     # Eliminar reservas
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         DELETE FROM reserva 
                         WHERE nombre_sala = %s AND edificio = %s
-                    """, (nombre_sala, edificio))
+                    """,
+                        (nombre_sala, edificio),
+                    )
 
                     # Eliminar sala
-                    cursor.execute("""
+                    cursor.execute(
+                        """
                         DELETE FROM sala 
                         WHERE nombre_sala = %s AND edificio = %s
-                    """, (nombre_sala, edificio))
+                    """,
+                        (nombre_sala, edificio),
+                    )
 
                     cnx.commit()
                     return jsonify({"success": True, "message": "Sala eliminada"}), 200
@@ -1370,7 +1816,8 @@ def admin_eliminar_sala(nombre_sala, edificio):
 
 # ==================== ADMINISTRACIÓN - USUARIOS ====================
 
-@app.route('/api/admin/usuarios', methods=['GET'])
+
+@app.route("/api/admin/usuarios", methods=["GET"])
 def admin_get_usuarios():
     """Lista todos los usuarios con información completa"""
     try:
@@ -1400,7 +1847,7 @@ def admin_get_usuarios():
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/admin/usuario/<ci>', methods=['DELETE'])
+@app.route("/api/admin/usuario/<ci>", methods=["DELETE"])
 def admin_eliminar_usuario(ci):
     """Elimina un usuario completamente (usa el endpoint cascade existente)"""
     return delete_participante_cascade(ci)
@@ -1408,25 +1855,37 @@ def admin_eliminar_usuario(ci):
 
 # ==================== ADMINISTRACIÓN - SANCIONES ====================
 
-@app.route('/api/admin/sancion', methods=['POST'])
+
+@app.route("/api/admin/sancion", methods=["POST"])
 def admin_crear_sancion():
     """Crea una sanción para un participante"""
     try:
         data = request.get_json()
 
-        if not all(key in data for key in ['ci_participante', 'dias']):
+        if not all(key in data for key in ["ci_participante", "dias"]):
             return jsonify({"success": False, "error": "Faltan campos requeridos"}), 400
 
-        dias = int(data['dias'])
+        dias = int(data["dias"])
         if dias <= 0:
-            return jsonify({"success": False, "error": "Los días deben ser positivos"}), 400
+            return (
+                jsonify({"success": False, "error": "Los días deben ser positivos"}),
+                400,
+            )
 
         with get_db_connection() as cnx:
             with cnx.cursor() as cursor:
                 # Verificar que el participante existe
-                cursor.execute("SELECT ci FROM participante WHERE ci = %s", (data['ci_participante'],))
+                cursor.execute(
+                    "SELECT ci FROM participante WHERE ci = %s",
+                    (data["ci_participante"],),
+                )
                 if not cursor.fetchone():
-                    return jsonify({"success": False, "error": "Participante no encontrado"}), 404
+                    return (
+                        jsonify(
+                            {"success": False, "error": "Participante no encontrado"}
+                        ),
+                        404,
+                    )
 
                 # Calcular fechas
                 fecha_inicio = datetime.now().date()
@@ -1437,21 +1896,28 @@ def admin_crear_sancion():
                 INSERT INTO sancion_participante (ci_participante, fecha_inicio, fecha_fin)
                 VALUES (%s, %s, %s)
                 """
-                cursor.execute(query, (data['ci_participante'], fecha_inicio, fecha_fin))
+                cursor.execute(
+                    query, (data["ci_participante"], fecha_inicio, fecha_fin)
+                )
                 cnx.commit()
 
-                return jsonify({
-                    "success": True, 
-                    "message": f"Sanción aplicada por {dias} días",
-                    "fecha_inicio": str(fecha_inicio),
-                    "fecha_fin": str(fecha_fin)
-                }), 201
+                return (
+                    jsonify(
+                        {
+                            "success": True,
+                            "message": f"Sanción aplicada por {dias} días",
+                            "fecha_inicio": str(fecha_inicio),
+                            "fecha_fin": str(fecha_fin),
+                        }
+                    ),
+                    201,
+                )
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
 
 
-@app.route('/api/admin/sancion/<ci>/<fecha_inicio>', methods=['DELETE'])
+@app.route("/api/admin/sancion/<ci>/<fecha_inicio>", methods=["DELETE"])
 def admin_eliminar_sancion(ci, fecha_inicio):
     """Elimina una sanción específica"""
     try:
@@ -1465,9 +1931,15 @@ def admin_eliminar_sancion(ci, fecha_inicio):
                 cnx.commit()
 
                 if cursor.rowcount > 0:
-                    return jsonify({"success": True, "message": "Sanción eliminada"}), 200
+                    return (
+                        jsonify({"success": True, "message": "Sanción eliminada"}),
+                        200,
+                    )
                 else:
-                    return jsonify({"success": False, "error": "Sanción no encontrada"}), 404
+                    return (
+                        jsonify({"success": False, "error": "Sanción no encontrada"}),
+                        404,
+                    )
 
     except Error as err:
         return jsonify({"success": False, "error": str(err)}), 500
@@ -1475,7 +1947,8 @@ def admin_eliminar_sancion(ci, fecha_inicio):
 
 # ==================== EDIFICIOS ====================
 
-@app.route('/api/edificios', methods=['GET'])
+
+@app.route("/api/edificios", methods=["GET"])
 def get_edificios():
     """Lista todos los edificios disponibles"""
     try:
@@ -1491,7 +1964,8 @@ def get_edificios():
 
 # ==================== HEALTH CHECK ====================
 
-@app.route('/api/health')
+
+@app.route("/api/health")
 def health_check():
     """
     Health check del servicio
@@ -1503,22 +1977,29 @@ def health_check():
                 cursor.execute("SELECT 1")
                 cursor.fetchone()
 
-        return jsonify({
-            "status": "healthy",
-            "database": "connected",
-            "message": "Servicio funcionando correctamente",
-            "api_version": "1.0"
-        }), 200
+        return (
+            jsonify(
+                {
+                    "status": "healthy",
+                    "database": "connected",
+                    "message": "Servicio funcionando correctamente",
+                    "api_version": "1.0",
+                }
+            ),
+            200,
+        )
 
     except Exception as e:
-        return jsonify({
-            "status": "unhealthy",
-            "database": "disconnected",
-            "error": str(e)
-        }), 503
+        return (
+            jsonify(
+                {"status": "unhealthy", "database": "disconnected", "error": str(e)}
+            ),
+            503,
+        )
 
 
 # ==================== ERROR HANDLERS ====================
+
 
 @app.errorhandler(404)
 def not_found(error):
@@ -1540,20 +2021,20 @@ def bad_request(error):
 
 # ==================== MAIN ====================
 
-if __name__ == '__main__':
-    print("\n" + "="*50)
+if __name__ == "__main__":
+    print("\n" + "=" * 50)
     print("🚀 Iniciando servidor Flask")
-    print("="*50)
+    print("=" * 50)
 
     if init_db():
         print(f"\n✅ Base de datos inicializada correctamente")
         test_connection()
-        print(f"\n🌐 Servidor corriendo en: http://localhost:{Config.PORT}")
+        print(f"\n🌐 Servidor corriendo en: http://0.0.0.0:{Config.PORT}")
         print(f"🔧 Modo debug: {Config.DEBUG}")
         print(f"📊 Health check: http://localhost:{Config.PORT}/api/health")
-        print("="*50 + "\n")
+        print("=" * 50 + "\n")
 
-        app.run(debug=Config.DEBUG, port=Config.PORT)
+        app.run(host="0.0.0.0", debug=Config.DEBUG, port=Config.PORT)
     else:
         print("\n❌ No se pudo inicializar la base de datos")
         print("💡 Verifica tu archivo .env y que MySQL esté corriendo")

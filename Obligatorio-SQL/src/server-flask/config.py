@@ -20,7 +20,7 @@ class Config:
         'database': os.getenv('DB_NAME', 'obligatorio'),
         'raise_on_warnings': True,
         'pool_name': 'mypool',
-        'pool_size': int(os.getenv('DB_POOL_SIZE', 5)),
+        'pool_size': 15,  # Aumentado para manejar 12+ requests paralelos del Dashboard
         'pool_reset_session': True
     }
 
