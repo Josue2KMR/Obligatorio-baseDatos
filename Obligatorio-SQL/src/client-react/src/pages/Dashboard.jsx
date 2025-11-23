@@ -127,9 +127,8 @@ export default function Dashboard() {
 
   return (
     <div className="dashboard-wrapper">
-      {/* ===== SECCIÓN: ESTADÍSTICAS GENERALES ===== */}
       <section className="dashboard-section">
-        <h2 className="section-title">📊 Resumen General</h2>
+        <h2 className="section-title">Resumen General</h2>
         <div className="stats-container">
           <div className="stat-card">
             <div className="stat-content">
@@ -137,7 +136,6 @@ export default function Dashboard() {
                 <p className="stat-label">Salas Totales</p>
                 <p className="stat-value">{salas.length}</p>
               </div>
-              <span className="stat-icon">🏛️</span>
             </div>
           </div>
 
@@ -147,7 +145,6 @@ export default function Dashboard() {
                 <p className="stat-label">Turnos</p>
                 <p className="stat-value">{turnos.length}</p>
               </div>
-              <span className="stat-icon">⏰</span>
             </div>
           </div>
 
@@ -157,7 +154,6 @@ export default function Dashboard() {
                 <p className="stat-label">Reservas Hoy</p>
                 <p className="stat-value">{reservasHoy.length}</p>
               </div>
-              <span className="stat-icon">📅</span>
             </div>
           </div>
 
@@ -173,16 +169,14 @@ export default function Dashboard() {
                   %
                 </p>
               </div>
-              <span className="stat-icon">📊</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ===== SECCIÓN: ESTADO DE SALAS EN TIEMPO REAL ===== */}
       <section className="dashboard-section">
         <div className="report-card">
-          <h2 className="report-card-title">📍 Estado de Salas Hoy</h2>
+          <h2 className="report-card-title">Estado Salas Hoy</h2>
           <div className="rooms-grid">
             {salas.map((sala) => {
               const reservasEnSala = reservasHoy.filter(
@@ -204,12 +198,12 @@ export default function Dashboard() {
                         ocupada ? "occupied" : "available"
                       }`}
                     >
-                      {ocupada ? "🔴 Ocupada" : "🟢 Libre"}
+                      {ocupada ? "Ocupada" : "Libre"}
                     </span>
                   </div>
                   <p className="room-building">{sala.edificio}</p>
                   <p className="room-details">
-                    👥 {sala.capacidad} | 📂 {sala.tipo_sala}
+                    Capacidad para {sala.capacidad} | 📂 {sala.tipo_sala}
                   </p>
                 </div>
               );
@@ -218,13 +212,11 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ===== SECCIÓN: DEMANDA Y OCUPACIÓN ===== */}
       <section className="dashboard-section">
-        <h2 className="section-title">🔥 Demanda y Ocupación</h2>
+        <h2 className="section-title">Demanda y Ocupación</h2>
         
-        {/* Salas Más Reservadas */}
         <div className="report-card">
-          <h2 className="report-card-title">🏆 Salas Más Reservadas</h2>
+          <h2 className="report-card-title">Salas más reservadas</h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
               <thead>
@@ -247,9 +239,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Turnos Más Demandados */}
         <div className="report-card">
-          <h2 className="report-card-title">⏰ Turnos Más Demandados</h2>
+          <h2 className="report-card-title">Turnos más demandados</h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
               <thead>
@@ -272,9 +263,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Ocupación por Edificio */}
         <div className="report-card">
-          <h2 className="report-card-title">🏢 Ocupación por Edificio</h2>
+          <h2 className="report-card-title">Ocupación por edificio</h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
               <thead>
@@ -310,13 +300,12 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ===== SECCIÓN: ANÁLISIS DE PARTICIPANTES ===== */}
       <section className="dashboard-section">
-        <h2 className="section-title">👥 Análisis de Participantes</h2>
+        <h2 className="section-title">Análisis de participantes</h2>
         
         {/* Promedio de Participantes por Sala */}
         <div className="report-card">
-          <h2 className="report-card-title">📊 Promedio de Participantes por Sala</h2>
+          <h2 className="report-card-title">Promedio de participantes por sala</h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
               <thead>
@@ -339,9 +328,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Reservas por Carrera y Facultad */}
         <div className="report-card">
-          <h2 className="report-card-title">🎓 Reservas por Carrera y Facultad</h2>
+          <h2 className="report-card-title">Reservas por Carrera y Facultad</h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
               <thead>
@@ -367,7 +355,7 @@ export default function Dashboard() {
         {/* Reservas y Asistencias por Tipo de Usuario */}
         <div className="report-card">
           <h2 className="report-card-title">
-            📈 Reservas y Asistencias por Tipo de Usuario
+            Reservas y asistencias por tipo de usuario
           </h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
@@ -406,13 +394,11 @@ export default function Dashboard() {
         </div>
       </section>
 
-      {/* ===== SECCIÓN: SANCIONES Y CUMPLIMIENTO ===== */}
       <section className="dashboard-section">
-        <h2 className="section-title">⚠️ Sanciones y Cumplimiento</h2>
+        <h2 className="section-title">Sanciones y cumplimiento</h2>
         
-        {/* Sanciones por Tipo de Usuario */}
         <div className="report-card">
-          <h2 className="report-card-title">🚫 Sanciones por Tipo de Usuario</h2>
+          <h2 className="report-card-title">Sanciones por Tipo de Usuario</h2>
           <div className="dashboard-table-container">
             <table className="dashboard-table">
               <thead>
@@ -443,9 +429,8 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Porcentaje de Uso de Reservas */}
         <div className="report-card">
-          <h2 className="report-card-title">📈 Porcentaje de Uso de Reservas</h2>
+          <h2 className="report-card-title">Porcentaje de uso de reservas</h2>
           {porcentajeUso && (
             <div className="stats-container">
               <div className="stat-card">
@@ -454,7 +439,6 @@ export default function Dashboard() {
                     <p className="stat-label">Finalizadas</p>
                     <p className="stat-value">{porcentajeUso.usadas}</p>
                   </div>
-                  <span className="stat-icon">✅</span>
                 </div>
               </div>
               <div className="stat-card">
@@ -463,7 +447,6 @@ export default function Dashboard() {
                     <p className="stat-label">Canceladas/Sin Asistencia</p>
                     <p className="stat-value">{porcentajeUso.no_usadas}</p>
                   </div>
-                  <span className="stat-icon">❌</span>
                 </div>
               </div>
               <div className="stat-card">
@@ -472,7 +455,6 @@ export default function Dashboard() {
                     <p className="stat-label">Total Reservas</p>
                     <p className="stat-value">{porcentajeUso.total}</p>
                   </div>
-                  <span className="stat-icon">📋</span>
                 </div>
               </div>
               <div className="stat-card">
@@ -481,7 +463,6 @@ export default function Dashboard() {
                     <p className="stat-label">% Uso Efectivo</p>
                     <p className="stat-value">{porcentajeUso.porcentaje_uso}%</p>
                   </div>
-                  <span className="stat-icon">📊</span>
                 </div>
               </div>
             </div>
