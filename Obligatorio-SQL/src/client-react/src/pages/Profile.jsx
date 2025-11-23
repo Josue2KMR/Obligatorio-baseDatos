@@ -56,12 +56,10 @@ export default function Perfil({ user, onLogout }) {
     const ahora = new Date();
     const fechaReserva = new Date(`${fecha}T00:00:00`);
     
-    // Verificar si es el mismo día
     if (fechaReserva.toDateString() !== ahora.toDateString()) {
       return false;
     }
     
-    // Comparar horas
     const [horaInicioH, horaInicioM] = horaInicio.split(':').map(Number);
     const [horaFinH, horaFinM] = horaFin.split(':').map(Number);
     
@@ -80,14 +78,14 @@ export default function Perfil({ user, onLogout }) {
       const data = await res.json();
       
       if (data.success) {
-        setMessage({ type: "success", text: "✅ Reserva cancelada exitosamente" });
+        setMessage({ type: "success", text: "Reserva cancelada exitosamente" });
         loadData();
       } else {
-        setMessage({ type: "error", text: `❌ ${data.error}` });
+        setMessage({ type: "error", text: `${data.error}` });
       }
     } catch (err) {
       console.error(err);
-      setMessage({ type: "error", text: "❌ Error al cancelar reserva" });
+      setMessage({ type: "error", text: "Error al cancelar reserva" });
     }
 
     setTimeout(() => setMessage({ type: "", text: "" }), 5000);
@@ -101,14 +99,14 @@ export default function Perfil({ user, onLogout }) {
       const data = await res.json();
       
       if (data.success) {
-        setMessage({ type: "success", text: "✅ Cuenta eliminada. Adiós..." });
+        setMessage({ type: "success", text: "Cuenta eliminada exitosamente" });
         setTimeout(() => onLogout(), 2000);
       } else {
-        setMessage({ type: "error", text: `❌ ${data.error}` });
+        setMessage({ type: "error", text: `${data.error}` });
       }
     } catch (err) {
       console.error(err);
-      setMessage({ type: "error", text: "❌ Error al eliminar cuenta" });
+      setMessage({ type: "error", text: "Error al eliminar cuenta" });
     }
 
     setShowDeleteConfirm(false);
@@ -131,11 +129,9 @@ export default function Perfil({ user, onLogout }) {
     );
   }
 
-// Clasificar reservas en activas, utilizadas y canceladas
-  // ---- FECHA Y HORA ACTUAL ----
+
   const now = new Date();
 
-  // Fecha HOY en zona local (Uruguay)
   const yyyy = now.getFullYear();
   const mm = String(now.getMonth() + 1).padStart(2, "0");
   const dd = String(now.getDate()).padStart(2, "0");
@@ -147,28 +143,22 @@ export default function Perfil({ user, onLogout }) {
   function turnoHaFinalizado(fecha, horaFin) {
     const reservaDate = new Date(fecha + "T00:00:00");
 
-    // Si la fecha es anterior a hoy → terminó
     const hoyDate = new Date(hoy + "T00:00:00");
     if (reservaDate < hoyDate) return true;
 
-    // Si la fecha es futura → NO terminó
     if (reservaDate > hoyDate) return false;
 
-    // Si la fecha es hoy → comparar horas
     const [h, m] = horaFin.split(":").map(Number);
     const finMin = h * 60 + m;
     return finMin <= nowMin;
   }
 
 
-  // ---- CATEGORIZACIÓN CORREGIDA ----
 
-  // Reservas en uso ahora
   const enUso = misReservas.filter((r) => {
     return r.estado !== "cancelada" && estaEnUso(r.fecha, r.hora_inicio, r.hora_fin);
   });
 
-  // Activas: turno no empezó todavía HOY, o es fecha futura, o estaba marcada finalizada pero aún no terminó
   const activas = misReservas.filter((r) => {
     if (r.estado === "cancelada") return false;
     if (estaEnUso(r.fecha, r.hora_inicio, r.hora_fin)) return false;
@@ -176,17 +166,14 @@ export default function Perfil({ user, onLogout }) {
     return false;
   });
 
-  // Utilizadas: solo si el turno REALMENTE terminó
   const utilizadas = misReservas.filter((r) => {
     if (r.estado === "cancelada") return false;
 
-    // Si ya terminó → utilizada
     if (turnoHaFinalizado(r.fecha, r.hora_fin)) return true;
 
     return false;
   });
 
-  // Canceladas sin tocar
   const canceladas = misReservas.filter((r) => r.estado === "cancelada");
 
 
@@ -239,7 +226,7 @@ export default function Perfil({ user, onLogout }) {
         ) : (
           <div className="delete-confirm">
             <p className="delete-confirm-text">
-              ⚠️ ¿Estás seguro? Esta acción no se puede deshacer.
+              Esta acción no se puede deshacer.
             </p>
             <div className="delete-confirm-actions">
               <button
@@ -385,15 +372,15 @@ export default function Perfil({ user, onLogout }) {
 
         <div className="divider"></div>
 
-        {/* UTILIZADAS */}
+        {/* FINALIZADAS */}
         <div>
           <h3 className="card-title" style={{ fontSize: '18px', color: '#2563eb' }}>
-            Utilizadas ({utilizadas.length})
+            Finalizadas ({utilizadas.length})
           </h3>
 
           {utilizadas.length === 0 ? (
             <div className="empty-state">
-              <p className="empty-state-text">No tienes reservas utilizadas.</p>
+              <p className="empty-state-text">No tienes reservas finalizadas.</p>
             </div>
           ) : (
             <div className="table-container">

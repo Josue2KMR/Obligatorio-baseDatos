@@ -23,7 +23,7 @@ function Login({ onLogin, onRegisterClick }) {
       return;
     }
 
-    // Validar correo UCU
+    // Validacion correo UCU
     if (!validarCorreoUCU(form.correo)) {
       setError("Debes usar un correo institucional UCU (@correo.ucu.edu.uy o @correo.ucu.uy)");
       return;

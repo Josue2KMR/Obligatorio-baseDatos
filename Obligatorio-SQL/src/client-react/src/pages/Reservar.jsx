@@ -19,7 +19,7 @@ export default function Reservar({ user }) {
     )}-${String(d.getDate()).padStart(2, "0")}`;
   })();
 
-  // 🔥 Cargar turnos ocupados para una sala y fecha
+  //Cargar turnos ocupados para una sala y fecha
   const cargarTurnosOcupados = async (fecha, sala) => {
     if (!sala || !fecha) return;
 
@@ -32,7 +32,7 @@ export default function Reservar({ user }) {
       if (data.success) {
         const ocupados = data.data
           .filter((r) => r.estado === "activa")
-          .map((r) => Number(r.id_turno)); // ahora sí existe id_turno
+          .map((r) => Number(r.id_turno)); 
 
         setTurnosOcupados(ocupados);
       } else {
@@ -73,7 +73,7 @@ export default function Reservar({ user }) {
       console.error("Error:", err);
       setMessage({
         type: "error",
-        text: "❌ Error al cargar datos iniciales.",
+        text: "Error al cargar datos",
       });
     } finally {
       setLoading(false);
@@ -105,7 +105,7 @@ export default function Reservar({ user }) {
     if (!participante) {
       setMessage({
         type: "error",
-        text: "❌ No se pudo obtener el participante.",
+        text: "No se pudo obtener el participante",
       });
       return;
     }
@@ -113,7 +113,7 @@ export default function Reservar({ user }) {
     if (!salaSeleccionada || !fechaReserva || !turnoSeleccionado) {
       setMessage({
         type: "error",
-        text: "❌ Sala, Fecha y Turno son obligatorios.",
+        text: "Error: Sala, Fecha y Turno son obligatorios",
       });
       return;
     }
@@ -138,23 +138,23 @@ export default function Reservar({ user }) {
       if (data.success) {
         setMessage({
           type: "success",
-          text: `✅ Reserva Exitosa! ID: ${data.id_reserva}`,
+          text: `Reserva Exitosa! ID: ${data.id_reserva}`,
         });
         setTurnoSeleccionado("");
 
-        // 🔥 Actualizar turnos ocupados para reflejar la nueva reserva
+        //Actualizar turnos ocupados para reflejar la nueva reserva
         cargarTurnosOcupados(fechaReserva, salaSeleccionada);
       } else {
         setMessage({
           type: "error",
-          text: `❌ Fallo en la Reserva: ${data.error}`,
+          text: `Error: Fallo en la Reserva: ${data.error}`,
         });
       }
     } catch (err) {
       console.error(err);
       setMessage({
         type: "error",
-        text: "❌ Error de conexión con el servidor.",
+        text: "Error de conexión con el servidor.",
       });
     }
   };
