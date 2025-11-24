@@ -1,4 +1,4 @@
-# 🏛️ Sistema de Reservas UCU - OneRoom
+# Sistema de Reservas UCU - OneRoom
 
 Sistema integral de gestión de reservas de salas de estudio para la Universidad Católica del Uruguay. Desarrollado con arquitectura moderna utilizando Docker, React, Flask y MySQL.
 
