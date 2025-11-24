@@ -4,7 +4,7 @@ Sistema integral de gestión de reservas de salas de estudio para la Universidad
 
 ---
 
-## 👥 Integrantes del Equipo
+## Integrantes del Equipo
 
 - **Josue Merino**
 - **Mateo Cimassi**
@@ -16,7 +16,7 @@ Sistema integral de gestión de reservas de salas de estudio para la Universidad
 
 ---
 
-## 📋 Tabla de Contenidos
+## Tabla de Contenidos
 
 - [Descripción del Proyecto](#-descripción-del-proyecto)
 - [Tecnologías Utilizadas](#-tecnologías-utilizadas)
@@ -33,20 +33,20 @@ Sistema integral de gestión de reservas de salas de estudio para la Universidad
 
 ---
 
-## 📖 Descripción del Proyecto
+## Descripción del Proyecto
 
 OneRoom es una aplicación web completa para la gestión de reservas de salas de estudio en la UCU. El sistema permite a los estudiantes reservar espacios, consultar disponibilidad en tiempo real, y a los administradores gestionar salas, usuarios y generar reportes estadísticos.
 
 ### Funcionalidades Principales
 
-✅ **Para Usuarios:**
+ **Para Usuarios:**
 - Registro e inicio de sesión con autenticación segura
 - Reserva de salas por fecha y turno
 - Visualización de estado de salas en tiempo real
 - Gestión de reservas personales (cancelación, consulta)
 - Panel de perfil con historial de reservas y sanciones
 
-✅ **Para Administradores:**
+ **Para Administradores:**
 - Panel de administración completo
 - Gestión de salas (crear, editar, eliminar)
 - Gestión de usuarios y sanciones
@@ -55,7 +55,7 @@ OneRoom es una aplicación web completa para la gestión de reservas de salas de
 
 ---
 
-## 🚀 Tecnologías Utilizadas
+## Tecnologías Utilizadas
 
 ### Frontend
 - **React 18** - Framework de interfaz de usuario
@@ -78,7 +78,7 @@ OneRoom es una aplicación web completa para la gestión de reservas de salas de
 
 ---
 
-## 🏗️ Arquitectura del Sistema
+## Arquitectura del Sistema
 
 ```
 ┌─────────────────┐      ┌─────────────────┐      ┌─────────────────┐
@@ -102,7 +102,7 @@ OneRoom es una aplicación web completa para la gestión de reservas de salas de
 
 ---
 
-## ✅ Requisitos Previos
+## Requisitos Previos
 
 Antes de comenzar, asegúrate de tener instalado:
 
@@ -118,7 +118,7 @@ Antes de comenzar, asegúrate de tener instalado:
 
 ---
 
-## 🔧 Instalación y Configuración
+## Instalación y Configuración
 
 ### 1️⃣ Clonar el Repositorio
 
@@ -161,9 +161,9 @@ docker-compose up -d --build
 ```
 
 Esto iniciará automáticamente:
-- ✅ MySQL con la base de datos inicializada
-- ✅ Backend Flask en http://localhost:5000
-- ✅ Frontend React en http://localhost
+- MySQL con la base de datos inicializada
+- Backend Flask en http://localhost:5000
+- Frontend React en http://localhost
 
 ### 4️⃣ Verificar Estado
 
@@ -182,7 +182,7 @@ docker logs obligatorio-mysql
 
 ---
 
-## 🎯 Uso del Sistema
+## Uso del Sistema
 
 ### Acceso a la Aplicación
 
@@ -196,13 +196,13 @@ docker logs obligatorio-mysql
 El sistema incluye datos de prueba en `BaseDatos/02-InsertsTablas.sql`:
 
 ```
-📧 Email: avril.fernandez@correo.ucu.uy
-🔑 Contraseña: contraseña123
-👤 Rol: Usuario regular con historial de reservas
+Email: avril.fernandez@correo.ucu.uy
+Contraseña: contraseña123
+Rol: Usuario regular con historial de reservas
 
-📧 Email: admin@correo.ucu.uy
-🔑 Contraseña: admin123
-👤 Rol: Administrador (acceso a panel admin)
+Email: admin@correo.ucu.uy
+Contraseña: admin123
+Rol: Administrador (acceso a panel admin)
 ```
 
 ### Comandos Útiles
@@ -227,18 +227,18 @@ docker-compose up -d --build
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 Obligatorio-SQL/
-├── 📂 BaseDatos/                    # Scripts SQL
+├── BaseDatos/                    # Scripts SQL
 │   ├── 01-TablasObligatorio.sql    # Definición de tablas
 │   └── 02-InsertsTablas.sql        # Datos de prueba
 │
-├── 📂 src/
-│   ├── 📂 client-react/             # Frontend React
-│   │   ├── 📂 src/
-│   │   │   ├── 📂 pages/           # Componentes de páginas
+├── src/
+│   ├── client-react/             # Frontend React
+│   │   ├── src/
+│   │   │   ├── pages/           # Componentes de páginas
 │   │   │   │   ├── Login.jsx       # Autenticación
 │   │   │   │   ├── Register.jsx    # Registro de usuarios
 │   │   │   │   ├── Dashboard.jsx   # Panel principal con reportes
@@ -252,7 +252,7 @@ Obligatorio-SQL/
 │   │   ├── package.json            # Dependencias Node
 │   │   └── vite.config.js          # Configuración Vite
 │   │
-│   └── 📂 server-flask/             # Backend Flask
+│   └── server-flask/             # Backend Flask
 │       ├── main.py                 # Aplicación principal + rutas API
 │       ├── database.py             # Pool de conexiones MySQL
 │       ├── config.py               # Configuración del sistema
@@ -266,7 +266,7 @@ Obligatorio-SQL/
 
 ---
 
-## 🗄️ Base de Datos
+## Base de Datos
 
 ### Esquema de Datos
 
@@ -313,7 +313,7 @@ docker-compose up -d
 
 ---
 
-## 🌐 API Endpoints
+## API Endpoints
 
 ### Autenticación
 ```
@@ -359,9 +359,9 @@ GET    /api/reportes/reservas-asistencias-detallado    # Asistencia por tipo
 
 ---
 
-## ⭐ Características Principales
+## Características Principales
 
-### 🎨 UI/UX Mejorado
+### UI/UX Mejorado
 - Paleta de colores personalizada UCU: `#c9031a`, `#9d1722`, `#4a2723`, `#07a2a6`, `#ffeccb`
 - Diseño responsive (desktop, tablet, mobile)
 - Animaciones suaves y transiciones
@@ -369,19 +369,19 @@ GET    /api/reportes/reservas-asistencias-detallado    # Asistencia por tipo
 - Cards con gradientes y efectos hover
 - Tablas con contraste optimizado
 
-### ⚡ Performance
+### Performance
 - **Pool de conexiones MySQL:** 15 conexiones simultáneas
 - **Retry automático:** 3 intentos con delay de 500ms
 - **Lazy loading:** Componentes React optimizados
 - **Build optimizado:** Vite con tree-shaking
 
-### 🔒 Seguridad
+### Seguridad
 - Validación de inputs en frontend y backend
 - Sanitización de queries SQL (prepared statements)
 - CORS configurado correctamente
 - Eliminación en cascada de datos sensibles
 
-### 📊 Reportes y Estadísticas
+### Reportes y Estadísticas
 - 12+ reportes en tiempo real
 - Visualización de ocupación por edificio
 - Análisis de demanda por turnos
@@ -390,7 +390,7 @@ GET    /api/reportes/reservas-asistencias-detallado    # Asistencia por tipo
 
 ---
 
-## 💻 Desarrollo
+## Desarrollo
 
 ### Desarrollo Local (Sin Docker)
 
@@ -432,7 +432,7 @@ docker-compose up -d --build
 
 ---
 
-## 🐛 Solución de Problemas
+## Solución de Problemas
 
 ### Error: "Port 80 already in use"
 
@@ -492,7 +492,7 @@ docker-compose up -d --build frontend
 
 ---
 
-## 📝 Notas Adicionales
+## Notas Adicionales
 
 ### Paleta de Colores UCU
 
@@ -520,7 +520,7 @@ docker-compose up -d --build frontend
 
 ---
 
-## 📄 Licencia
+## Licencia
 
 Este proyecto es desarrollado como parte del curso de Base de Datos I en la Universidad Católica del Uruguay.
 
