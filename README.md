@@ -120,7 +120,7 @@ Antes de comenzar, asegúrate de tener instalado:
 
 ## Instalación y Configuración
 
-### 1️⃣ Clonar el Repositorio
+### 1) Clonar el Repositorio
 
 ```powershell
 # Clonar el repositorio
@@ -130,7 +130,7 @@ git clone https://github.com/Josue2KMR/Obligatorio-baseDatos.git
 cd Obligatorio-baseDatos/Obligatorio-SQL
 ```
 
-### 2️⃣ Configurar Variables de Entorno (Opcional)
+### 2) Configurar Variables de Entorno (Opcional)
 
 El sistema funciona con configuración por defecto. Para personalizar:
 
@@ -153,7 +153,7 @@ FLASK_PORT=5000
 SECRET_KEY=tu-clave-secreta-aqui
 ```
 
-### 3️⃣ Iniciar la Aplicación
+### 3) Iniciar la Aplicación
 
 ```powershell
 # Construir e iniciar todos los contenedores
@@ -165,7 +165,7 @@ Esto iniciará automáticamente:
 - Backend Flask en http://localhost:5000
 - Frontend React en http://localhost
 
-### 4️⃣ Verificar Estado
+### 4) Verificar Estado
 
 ```powershell
 # Ver contenedores en ejecución
